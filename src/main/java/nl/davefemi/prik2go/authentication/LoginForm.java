@@ -1,4 +1,4 @@
-package nl.davefemi.prik2go.gui;
+package nl.davefemi.prik2go.authentication;
 
 import nl.davefemi.prik2go.dto.UserDTO;
 import nl.davefemi.prik2go.exceptions.BerichtDialoog;

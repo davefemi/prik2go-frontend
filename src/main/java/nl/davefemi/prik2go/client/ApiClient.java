@@ -1,17 +1,23 @@
 package nl.davefemi.prik2go.client;
 
 import nl.davefemi.prik2go.dto.KlantenDTO;
+import nl.davefemi.prik2go.dto.SessionDTO;
+import nl.davefemi.prik2go.dto.UserDTO;
 import nl.davefemi.prik2go.exceptions.ApplicatieException;
 import nl.davefemi.prik2go.exceptions.VestigingException;
 import nl.davefemi.prik2go.observer.ApiSubject;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.*;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.util.MultiValueMapAdapter;
 import org.springframework.web.client.RestTemplate;
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
+import java.util.*;
 
 public class ApiClient extends ApiSubject implements ApiClientInterface {
     private static final Log log = LogFactory.getLog(ApiClient.class);
@@ -19,7 +25,7 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     private final RestTemplate restTemplate;
 //    private static final String URL = "https://prik2go-backend.onrender.com/private/locations/%s";
     private static final String URL = "http://localhost:8080/private/locations/%s";
-    private String token;
+    private SessionDTO session;
 
 
     public ApiClient(RestTemplate restTemplate){
@@ -40,22 +46,23 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
         timer.stop();
     }
 
-    private HttpEntity<String> getHeaders(){
+    private HttpEntity<String> getHttpRequest(){
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + token);
-        return new HttpEntity<String>(headers);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Bearer " + session.getToken());
+        return new HttpEntity<>(session.getUser().toString(), headers);
     }
 
-    public void setToken(String token){
-        this.token = token;
+    public void setSession(SessionDTO session){
+        this.session = session;
     }
 
     @Override
     public ResponseEntity<List> getBranches() throws ApplicatieException {
         ResponseEntity<List> response =
                 restTemplate.exchange(String.format(URL, "get-branches"),
-                HttpMethod.GET,
-                getHeaders(),
+                HttpMethod.POST,
+                getHttpRequest(),
                 List.class);
         return response;
     }
@@ -64,8 +71,8 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     public ResponseEntity<KlantenDTO> getCustomers(String location) {
         ResponseEntity<KlantenDTO> response =
                 restTemplate.exchange(String.format(URL, "get-customers?location=" + location),
-                        HttpMethod.GET,
-                        getHeaders(),
+                        HttpMethod.POST,
+                        getHttpRequest(),
                         KlantenDTO.class);
         return response;
     }
@@ -74,8 +81,8 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     public ResponseEntity<Boolean> getBranchStatus(String location) throws ApplicatieException {
         ResponseEntity<Boolean> response =
                 restTemplate.exchange(String.format(URL, "get-status?location=" + location),
-                        HttpMethod.GET,
-                        getHeaders(),
+                        HttpMethod.POST,
+                        getHttpRequest(),
                         Boolean.class);
         return response;
     }
@@ -84,7 +91,7 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     public void changeBranchStatus(String location) throws VestigingException, ApplicatieException {
         restTemplate.exchange(String.format(URL, "change-status?location=" + location),
                 HttpMethod.PUT,
-                getHeaders(),
+                getHttpRequest(),
                 Void.class);
         notifyObservers();
     }
