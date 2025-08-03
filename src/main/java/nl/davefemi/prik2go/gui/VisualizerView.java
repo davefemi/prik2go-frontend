@@ -7,12 +7,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import javax.swing.*;
-
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.Skin;
 import nl.davefemi.prik2go.controller.VisualizerControllerInterface;
 import nl.davefemi.prik2go.exceptions.ApplicatieException;
 import nl.davefemi.prik2go.exceptions.BerichtDialoog;
@@ -41,9 +39,8 @@ public class VisualizerView extends JFrame implements ApiObserver {
          * Constructor voor Visualizer View waarbij de controller wordt geinitialiseerd en de view wordt
          * aangemeld als een observer van de vestingsklassen. De initiële visualisatie wordt opgestart.
          * @param controller
-         * @throws ApplicatieException
          */
-        public VisualizerView(VisualizerControllerInterface controller) throws ApplicatieException {
+        public VisualizerView(VisualizerControllerInterface controller)  {
                 super();
                 this.controller = controller;
                 initialize();
@@ -85,10 +82,9 @@ public class VisualizerView extends JFrame implements ApiObserver {
          * @return map<locatie, aantal klanten>
          */
         private void getMap(Consumer<Map<String, Integer>> callback) {
-                controller.getBarInfo(stringIntegerMap ->{
-                        callback.accept(stringIntegerMap);
-                }, exception ->{
-
+                controller.getBarInfo(
+                        stringIntegerMap -> callback.accept(stringIntegerMap),
+                        exception ->{
                 });
         }
 
@@ -96,7 +92,6 @@ public class VisualizerView extends JFrame implements ApiObserver {
          * Tekent de bars op basis van de map met (key, value) paren.
          * Bars met hoogte 0 worden getoond als bars met maximale hoogte in de
          * achtergrondkleur.
-         * @throws ApplicatieException 
          * 
          */
         private void drawBars(Map<String, Integer> map) throws ApplicatieException {
@@ -187,9 +182,8 @@ public class VisualizerView extends JFrame implements ApiObserver {
                     } catch (ApplicatieException e) {
                         throw new RuntimeException(e);
                     }
-                }, exception ->{
-                        BerichtDialoog.getErrorDialoog(this, exception.getMessage());
-                });
+                }, exception -> BerichtDialoog.getErrorDialoog(this, exception.getMessage())
+                );
         }
 
         /**

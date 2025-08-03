@@ -1,7 +1,6 @@
 package nl.davefemi.prik2go.service;
 
 import lombok.RequiredArgsConstructor;
-import nl.davefemi.prik2go.client.ApiClient;
 import nl.davefemi.prik2go.client.ApiClientInterface;
 import nl.davefemi.prik2go.dto.KlantenDTO;
 import nl.davefemi.prik2go.exceptions.ApplicatieException;
@@ -18,7 +17,7 @@ public class DataService implements DataServiceInterface {
     }
 
     @Override
-    public KlantenDTO getKlantenDTO(String locatie) throws IllegalAccessException {
+    public KlantenDTO getKlantenDTO(String locatie) throws IllegalAccessException, ApplicatieException {
         return client.getCustomers(locatie).getBody();
     }
 

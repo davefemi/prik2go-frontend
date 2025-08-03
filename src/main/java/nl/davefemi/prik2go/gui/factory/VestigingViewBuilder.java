@@ -92,7 +92,6 @@ public class VestigingViewBuilder {
          * @param gekozenLocatie
          * @param klantnummers
          * @param aantalKlanten
-         * @param status
          */
         public void updateDisplay(Map<String, Boolean> locaties, String gekozenLocatie, List<Integer> klantnummers,
                         int aantalKlanten, boolean actie) {

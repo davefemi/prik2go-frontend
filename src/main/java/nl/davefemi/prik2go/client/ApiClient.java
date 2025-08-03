@@ -46,7 +46,7 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
         timer.stop();
     }
 
-    private synchronized HttpEntity<String> getHttpRequest() throws IllegalAccessException {
+    private synchronized HttpEntity<String> getHttpRequest() throws IllegalAccessException, ApplicatieException {
         if (session == null ){
             throw new IllegalAccessException("No authorisation");
         }
@@ -55,7 +55,9 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
             try{
                 session = dto.get();
             }
-            catch (Exception e){}
+            catch (Exception e){
+                throw new ApplicatieException(e.getMessage());
+            }
             if (session == null){
                 throw new IllegalAccessException("No authorisation");
             }
@@ -97,36 +99,30 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
 
     @Override
     public ResponseEntity<List> getBranches() throws ApplicatieException, IllegalAccessException {
-        ResponseEntity<List> response =
-                restTemplate.exchange(String.format(URL, "get-branches"),
+        return restTemplate.exchange(String.format(URL, "get-branches"),
                 HttpMethod.POST,
                 getHttpRequest(),
                 List.class);
-        return response;
     }
 
     @Override
-    public ResponseEntity<KlantenDTO> getCustomers(String location) throws IllegalAccessException {
-        ResponseEntity<KlantenDTO> response =
-                restTemplate.exchange(String.format(URL, "get-customers?location=" + location),
+    public ResponseEntity<KlantenDTO> getCustomers(String location) throws IllegalAccessException, ApplicatieException {
+        return restTemplate.exchange(String.format(URL, "get-customers?location=" + location),
                         HttpMethod.POST,
                         getHttpRequest(),
                         KlantenDTO.class);
-        return response;
     }
 
     @Override
     public ResponseEntity<Boolean> getBranchStatus(String location) throws ApplicatieException, IllegalAccessException {
-        ResponseEntity<Boolean> response =
-                restTemplate.exchange(String.format(URL, "get-status?location=" + location),
+        return restTemplate.exchange(String.format(URL, "get-status?location=" + location),
                         HttpMethod.POST,
                         getHttpRequest(),
                         Boolean.class);
-        return response;
     }
 
     @Override
-    public void changeBranchStatus(String location) throws VestigingException, ApplicatieException, IllegalAccessException {
+    public void changeBranchStatus(String location) throws ApplicatieException, IllegalAccessException {
         restTemplate.exchange(String.format(URL, "change-status?location=" + location),
                 HttpMethod.PUT,
                 getHttpRequest(),

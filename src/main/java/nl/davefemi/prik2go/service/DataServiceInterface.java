@@ -11,7 +11,7 @@ public interface DataServiceInterface {
 
     List<String> getVestigingen() throws ApplicatieException, IllegalAccessException;
 
-    KlantenDTO getKlantenDTO(String locatie) throws IllegalAccessException;
+    KlantenDTO getKlantenDTO(String locatie) throws IllegalAccessException, ApplicatieException;
 
     boolean getVestigingStatus(String locatie) throws ApplicatieException, IllegalAccessException;
 

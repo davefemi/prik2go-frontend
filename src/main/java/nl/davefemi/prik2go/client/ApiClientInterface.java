@@ -11,7 +11,7 @@ public interface ApiClientInterface {
 
     public ResponseEntity<List> getBranches() throws ApplicatieException, IllegalAccessException;
 
-    public ResponseEntity<KlantenDTO> getCustomers(String location) throws IllegalAccessException;
+    public ResponseEntity<KlantenDTO> getCustomers(String location) throws IllegalAccessException, ApplicatieException;
 
     public ResponseEntity<Boolean> getBranchStatus(String location) throws ApplicatieException, IllegalAccessException;
 
