@@ -52,6 +52,7 @@ public class Prik2GoApp {
                                 if(e instanceof CancellationException){
                                         return;
                                 }
+                                else BerichtDialoog.getErrorDialoog(null, e.getMessage());
                                 init();
                         });
                 }

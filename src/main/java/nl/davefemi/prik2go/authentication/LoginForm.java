@@ -1,8 +1,6 @@
 package nl.davefemi.prik2go.authentication;
 
 import nl.davefemi.prik2go.dto.UserDTO;
-import nl.davefemi.prik2go.exceptions.BerichtDialoog;
-
 import javax.swing.*;
 import java.util.concurrent.CancellationException;
 
@@ -43,8 +41,7 @@ public class LoginForm extends JPanel {
                 return dto;
             }
             else{
-                BerichtDialoog.getErrorDialoog(this,"Fields cannot be blank");
-                throw new IllegalArgumentException("n");
+                throw new IllegalArgumentException("Fields cannot be blank");
             }
         }
         throw new CancellationException("User cancelled");

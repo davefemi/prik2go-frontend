@@ -2,18 +2,13 @@ package nl.davefemi.prik2go.client;
 
 import nl.davefemi.prik2go.dto.KlantenDTO;
 import nl.davefemi.prik2go.dto.SessionDTO;
-import nl.davefemi.prik2go.dto.UserDTO;
 import nl.davefemi.prik2go.exceptions.ApplicatieException;
 import nl.davefemi.prik2go.exceptions.VestigingException;
 import nl.davefemi.prik2go.observer.ApiSubject;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.*;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.util.MultiValueMapAdapter;
 import org.springframework.web.client.RestTemplate;
-import javax.swing.*;
 import javax.swing.Timer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -23,8 +18,8 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     private static final Log log = LogFactory.getLog(ApiClient.class);
     private final Timer timer = new Timer(1000, new RefreshListener());
     private final RestTemplate restTemplate;
-//    private static final String URL = "https://prik2go-backend.onrender.com/private/locations/%s";
-    private static final String URL = "http://localhost:8080/private/locations/%s";
+    private static final String URL = "https://prik2go-backend.onrender.com/private/locations/%s";
+//    private static final String URL = "http://localhost:8080/private/locations/%s";
     private SessionDTO session;
 
 

@@ -142,7 +142,7 @@ public class VisualizerView extends JFrame implements ApiObserver {
                         // // bar in kleur geel met hoogte: schaalfactor * aantal klanten.
                         int height_bar = (int) (verticalScaleFactor * value);
                         int y_pos = HEIGHT_PANE - height_bar;
-                        bar = new Bar(key, value, x_pos, y_pos, width_bar, height_bar, new Color(0,80,80));
+                        bar = new Bar(key, value, x_pos, y_pos, width_bar, height_bar, new Color(85, 120, 147));
                 }
                 bar.addMouseListener(new BarLuisteraar());
                 pane.add(bar);

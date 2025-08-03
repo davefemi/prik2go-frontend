@@ -1,6 +1,5 @@
 package nl.davefemi.prik2go.service;
 
-import nl.davefemi.prik2go.client.ApiClient;
 import nl.davefemi.prik2go.client.AuthClient;
 import nl.davefemi.prik2go.dto.SessionDTO;
 import nl.davefemi.prik2go.dto.UserDTO;

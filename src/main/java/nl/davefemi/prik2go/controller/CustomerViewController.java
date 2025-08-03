@@ -146,8 +146,6 @@ public class CustomerViewController {
          * exceptie opgegooid
          */
         public void veranderVestigingStatus(String locatie, Consumer<Exception> exceptionHandling) {
-                String[] applicatie = {null};
-                String[] vestiging = {null};
                 SwingWorker worker = new SwingWorker<Void, Void>() {
                         @Override
                         protected Void doInBackground() throws Exception {
@@ -162,7 +160,7 @@ public class CustomerViewController {
                             } catch (InterruptedException e) {
                                 throw new RuntimeException(e);
                             } catch (ExecutionException e) {
-                                    exceptionHandling.accept((Exception) e.getCause());
+                                    exceptionHandling.accept((Exception) e);
                             }
                         }
                 };

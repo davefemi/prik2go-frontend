@@ -9,8 +9,9 @@ import javax.swing.JButton;
  */
 public class VestigingKnop extends JButton {
         private static final long serialVersionUID = 1L;
-        private static final Color OPENKLEUR = new Color (6,64,43);
-        private static final Color GESLOTENKLEUR = new Color(149,6,6);
+        private static final Color OPENKLEUR = new Color (187, 214, 236);
+        private static final Color GESLOTENKLEUR = new Color(236, 231, 231);
+        private static final Color LETTERKLEUR = new Color(1,1,1);
         
         /**
          * Constructor voor de klasse VestigingKnop
@@ -19,7 +20,7 @@ public class VestigingKnop extends JButton {
          */
         public VestigingKnop(String locatie, boolean open) {
                 super(locatie);
-                this.setForeground(Color.WHITE);
+                this.setForeground(LETTERKLEUR);
                 this.setFocusable(false);
                 this.putClientProperty("vestiging", locatie);
                 this.putClientProperty("status", open);
