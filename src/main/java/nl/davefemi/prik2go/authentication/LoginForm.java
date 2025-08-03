@@ -2,6 +2,7 @@ package nl.davefemi.prik2go.authentication;
 
 import nl.davefemi.prik2go.dto.UserDTO;
 import javax.swing.*;
+import java.util.UUID;
 import java.util.concurrent.CancellationException;
 
 public class LoginForm extends JPanel {
@@ -29,7 +30,7 @@ public class LoginForm extends JPanel {
         panel.add(passwordField);
     }
 
-    public UserDTO getUserLogin(){
+    public UserDTO getUserLogin(UUID user){
         int result = JOptionPane.showConfirmDialog(null, panel, "Login", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
         if (result == JOptionPane.OK_OPTION){
             if (!(emailField.getText().isBlank() || new String(passwordField.getPassword()).isBlank())) {
@@ -44,6 +45,6 @@ public class LoginForm extends JPanel {
                 throw new IllegalArgumentException("Fields cannot be blank");
             }
         }
-        throw new CancellationException("User cancelled");
+        throw new CancellationException("You must enter a password");
     }
 }

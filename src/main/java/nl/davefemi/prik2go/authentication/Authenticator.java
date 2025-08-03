@@ -4,19 +4,20 @@ import nl.davefemi.prik2go.dto.SessionDTO;
 import nl.davefemi.prik2go.service.AuthService;
 
 import javax.swing.*;
+import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.function.Consumer;
 
 public class Authenticator {
     private static final AuthService authService = new AuthService();
     
-    public static void login(Consumer<SessionDTO> callback, Consumer<Exception> exceptionConsumer) {
+    public static void login(UUID user, Consumer<SessionDTO> callback, Consumer<Exception> exceptionConsumer) {
         LoginForm loginForm = new LoginForm();
         SwingWorker worker = new SwingWorker<SessionDTO, Void>() {
 
             @Override
             protected SessionDTO doInBackground() throws Exception {
-                return authService.loginUser(loginForm.getUserLogin());
+                return authService.loginUser(loginForm.getUserLogin(user != null ? user : null));
             }
 
             @Override

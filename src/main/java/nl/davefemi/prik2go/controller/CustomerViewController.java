@@ -32,7 +32,7 @@ public class CustomerViewController {
          * @throws ApplicatieException als er een fout optreedt met de verbinding met de
          * database
          */
-        public CustomerViewController(DataServiceInterface service) throws ApplicatieException {
+        public CustomerViewController(DataServiceInterface service) throws ApplicatieException, IllegalAccessException {
                 this.service = service;
                 initVestigingen();
         }
@@ -40,7 +40,7 @@ public class CustomerViewController {
         /**
          * Verzorgt de initialisatie van de Vestiging-arraylist.
          */
-        private void initVestigingen() throws ApplicatieException {
+        private void initVestigingen() throws ApplicatieException, IllegalAccessException {
                 vestigingen = service.getVestigingen();
         }
 
@@ -160,7 +160,7 @@ public class CustomerViewController {
                             } catch (InterruptedException e) {
                                 throw new RuntimeException(e);
                             } catch (ExecutionException e) {
-                                    exceptionHandling.accept((Exception) e);
+                                    exceptionHandling.accept((Exception) e.getCause());
                             }
                         }
                 };

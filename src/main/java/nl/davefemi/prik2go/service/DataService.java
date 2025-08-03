@@ -13,22 +13,22 @@ public class DataService implements DataServiceInterface {
     private final ApiClientInterface client;
 
     @Override
-    public List<String> getVestigingen() throws ApplicatieException {
+    public List<String> getVestigingen() throws ApplicatieException, IllegalAccessException {
         return (List<String>) client.getBranches().getBody();
     }
 
     @Override
-    public KlantenDTO getKlantenDTO(String locatie) {
+    public KlantenDTO getKlantenDTO(String locatie) throws IllegalAccessException {
         return client.getCustomers(locatie).getBody();
     }
 
     @Override
-    public boolean getVestigingStatus(String locatie) throws ApplicatieException {
+    public boolean getVestigingStatus(String locatie) throws ApplicatieException, IllegalAccessException {
         return client.getBranchStatus(locatie).getBody();
     }
 
     @Override
-    public void veranderVestigingStatus(String locatie) throws VestigingException, ApplicatieException {
+    public void veranderVestigingStatus(String locatie) throws VestigingException, ApplicatieException, IllegalAccessException {
         client.changeBranchStatus(locatie);
     }
 }

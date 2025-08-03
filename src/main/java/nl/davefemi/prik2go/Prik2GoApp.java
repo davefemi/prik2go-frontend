@@ -41,11 +41,11 @@ public class Prik2GoApp {
                 service = new DataService((ApiClient) apiSubject);
                 try {
                         UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-                        Authenticator.login(session ->{
+                        Authenticator.login(null,session ->{
                                 ((ApiClient) apiSubject).setSession(session);
                                 try {
                                         startSessie();
-                                } catch (ApplicatieException e) {
+                                } catch (ApplicatieException | IllegalAccessException e) {
                                         BerichtDialoog.getErrorDialoog(null, e.getMessage());
                                 }
                         }, e->{
@@ -88,7 +88,7 @@ public class Prik2GoApp {
          * Methode voor het opstarten van de sessie met de creatie van de VestigingController
          * en de VestigingView.
          */
-        private static void startSessie() throws ApplicatieException {
+        private static void startSessie() throws ApplicatieException, IllegalAccessException {
                                 CustomerViewController customerViewController = new CustomerViewController(service);
                                 SwingUtilities.invokeLater(() -> {
                                         CustomerView gui = new CustomerView(customerViewController);

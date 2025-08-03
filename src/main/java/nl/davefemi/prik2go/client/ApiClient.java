@@ -1,8 +1,10 @@
 package nl.davefemi.prik2go.client;
 
+import nl.davefemi.prik2go.authentication.Authenticator;
 import nl.davefemi.prik2go.dto.KlantenDTO;
 import nl.davefemi.prik2go.dto.SessionDTO;
 import nl.davefemi.prik2go.exceptions.ApplicatieException;
+import nl.davefemi.prik2go.exceptions.BerichtDialoog;
 import nl.davefemi.prik2go.exceptions.VestigingException;
 import nl.davefemi.prik2go.observer.ApiSubject;
 import org.apache.commons.logging.Log;
@@ -12,7 +14,9 @@ import org.springframework.web.client.RestTemplate;
 import javax.swing.Timer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.*;
 
 public class ApiClient extends ApiSubject implements ApiClientInterface {
     private static final Log log = LogFactory.getLog(ApiClient.class);
@@ -20,7 +24,9 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     private final RestTemplate restTemplate;
     private static final String URL = "https://prik2go-backend.onrender.com/private/locations/%s";
 //    private static final String URL = "http://localhost:8080/private/locations/%s";
-    private SessionDTO session;
+    private static final ExecutorService pool = Executors.newSingleThreadExecutor();
+    private volatile SessionDTO session;
+    private static final Object lock = new Object();
 
 
     public ApiClient(RestTemplate restTemplate){
@@ -30,7 +36,6 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
 
     private void init(){
         startTimer();
-        log.info("Timer has started");
     }
 
     private void startTimer(){
@@ -41,7 +46,20 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
         timer.stop();
     }
 
-    private HttpEntity<String> getHttpRequest(){
+    private synchronized HttpEntity<String> getHttpRequest() throws IllegalAccessException {
+        if (session == null ){
+            throw new IllegalAccessException("No authorisation");
+        }
+        if (session.getExpiresAt().isBefore(Instant.now().plusSeconds(30))) {
+            Future<SessionDTO> dto = refreshSession(session.getUser());
+            try{
+                session = dto.get();
+            }
+            catch (Exception e){}
+            if (session == null){
+                throw new IllegalAccessException("No authorisation");
+            }
+        }
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Authorization", "Bearer " + session.getToken());
@@ -49,11 +67,36 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     }
 
     public void setSession(SessionDTO session){
-        this.session = session;
+        synchronized (lock) {
+            this.session = session;
+        }
+    }
+
+    public Future<SessionDTO> refreshSession(UUID user) {
+        return pool.submit(() -> {
+            SessionDTO[] result = new SessionDTO[1];
+            int retries = 5;
+            while (retries-- > 0) {
+                CountDownLatch wait = new CountDownLatch(1);
+                Authenticator.login(user, session -> {
+                    result[0] = session;
+                    wait.countDown();
+                    log.info("Authentication refreshed");
+                }, e -> {
+                    BerichtDialoog.getErrorDialoog(null, e.getMessage());
+                    wait.countDown();
+                });
+                wait.await();
+                if (result[0] != null) {
+                    break;
+                }
+            }
+            return result[0];
+        });
     }
 
     @Override
-    public ResponseEntity<List> getBranches() throws ApplicatieException {
+    public ResponseEntity<List> getBranches() throws ApplicatieException, IllegalAccessException {
         ResponseEntity<List> response =
                 restTemplate.exchange(String.format(URL, "get-branches"),
                 HttpMethod.POST,
@@ -63,7 +106,7 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     }
 
     @Override
-    public ResponseEntity<KlantenDTO> getCustomers(String location) {
+    public ResponseEntity<KlantenDTO> getCustomers(String location) throws IllegalAccessException {
         ResponseEntity<KlantenDTO> response =
                 restTemplate.exchange(String.format(URL, "get-customers?location=" + location),
                         HttpMethod.POST,
@@ -73,7 +116,7 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     }
 
     @Override
-    public ResponseEntity<Boolean> getBranchStatus(String location) throws ApplicatieException {
+    public ResponseEntity<Boolean> getBranchStatus(String location) throws ApplicatieException, IllegalAccessException {
         ResponseEntity<Boolean> response =
                 restTemplate.exchange(String.format(URL, "get-status?location=" + location),
                         HttpMethod.POST,
@@ -83,7 +126,7 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     }
 
     @Override
-    public void changeBranchStatus(String location) throws VestigingException, ApplicatieException {
+    public void changeBranchStatus(String location) throws VestigingException, ApplicatieException, IllegalAccessException {
         restTemplate.exchange(String.format(URL, "change-status?location=" + location),
                 HttpMethod.PUT,
                 getHttpRequest(),

@@ -18,7 +18,7 @@ public class VisualizerController implements VisualizerControllerInterface {
         private final DataServiceInterface service;
         private List<String> vestigingen;
 
-        public VisualizerController(DataServiceInterface service) throws ApplicatieException {
+        public VisualizerController(DataServiceInterface service) throws ApplicatieException, IllegalAccessException {
                  this.service = service;
                  initVestigingen();
         }
@@ -26,7 +26,7 @@ public class VisualizerController implements VisualizerControllerInterface {
         /**
         * Verzorgt de initialisatie van de Vestiging-arraylist.
         */
-        private void initVestigingen() throws ApplicatieException {
+        private void initVestigingen() throws ApplicatieException, IllegalAccessException {
                 vestigingen = service.getVestigingen();
         }
         /**
