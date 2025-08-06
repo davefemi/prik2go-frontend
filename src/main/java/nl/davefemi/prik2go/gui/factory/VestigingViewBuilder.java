@@ -4,12 +4,10 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.Map;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
+import javax.swing.*;
+
 import nl.davefemi.prik2go.gui.factory.components.ActieKnop;
+import nl.davefemi.prik2go.gui.factory.components.Menu;
 import nl.davefemi.prik2go.gui.factory.components.VestigingKnop;
 
 /**
@@ -17,6 +15,7 @@ import nl.davefemi.prik2go.gui.factory.components.VestigingKnop;
  * van de VestigingView.
  */
 public class VestigingViewBuilder {
+        private JMenuBar menuBar = null;
         private JPanel vestigingPaneel = null;
         private ActieKnop statusWisselKnop = null;
         private JPanel klantenPaneel = null;
@@ -46,7 +45,15 @@ public class VestigingViewBuilder {
                 this.actieKnopListener = actieKnopListener;
                 this.visualizerKnopListener = visualizerKnopListener;
         }
-             
+
+        public JMenuBar getMenu(){
+                if (menuBar == null ){
+                        menuBar = new Menu();
+                        System.setProperty("apple.laf.useScreenMenuBar", "true");
+                }
+                return menuBar;
+        }
+
         /**
          * Vestiging paneel wordt opgebouwd en knoppen worden toegevoegd met labels die
          * horen bij vestigingen.

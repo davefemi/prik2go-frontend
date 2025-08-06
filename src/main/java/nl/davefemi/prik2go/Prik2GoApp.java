@@ -15,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.swing.*;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.Future;
 import java.util.logging.Logger;
 
 /**
@@ -41,25 +42,19 @@ public class Prik2GoApp {
                 service = new DataService((ApiClient) apiSubject);
                 try {
                         UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-                        Authenticator.login(null,session ->{
-                                ((ApiClient) apiSubject).setSession(session);
-                                try {
-                                        startSessie();
-                                } catch (ApplicatieException | IllegalAccessException e) {
-                                        BerichtDialoog.getErrorDialoog(null, e.getMessage());
-                                }
-                        }, e->{
-                                if(e instanceof CancellationException){
-                                        return;
-                                }
-                                else BerichtDialoog.getErrorDialoog(null, e.getMessage());
-                                init();
-                        });
+                        boolean result = Authenticator.ensureValidSession();
+
+                        if (!result){
+                                System.exit(0);
+                        }
+                        startSessie();
                 }
                 catch (Exception e) {
                         if(e instanceof UnsupportedLookAndFeelException) {
                                 logger.warning(e.getMessage());
                         }
+                        BerichtDialoog.getErrorDialoog(null, e.getMessage());
+                        System.exit(0);
                 }
         }
 
@@ -97,4 +92,6 @@ public class Prik2GoApp {
                                         gui.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
                                 });
         }
+
+
 }

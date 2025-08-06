@@ -13,8 +13,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 public class AuthClient {
     private static final RestTemplate restTemplate = new RestTemplate();
-        private static final String URL = "https://prik2go-backend.onrender.com/public/auth/%s";
-//    private static final String URL = "http://localhost:8080/public/auth/%s";
+//        private static final String URL = "https://prik2go-backend.onrender.com/public/auth/%s";
+    private static final String URL = "http://localhost:8080/public/auth/%s";
 
     @Bean
     public ObjectMapper objectMapper() {

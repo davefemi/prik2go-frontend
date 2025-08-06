@@ -61,6 +61,7 @@ public class CustomerView extends JFrame implements ApiObserver {
                 this.setVisible(true);
                 controller.getVestigingStatus(vestigingMap ->{
                         this.remove(loading);
+                        this.setJMenuBar(builder.getMenu());
                         this.add(builder.getVestigingPaneel(vestigingMap), BorderLayout.WEST);
                         this.add(builder.getKlantenPaneel(), BorderLayout.CENTER);
                         this.revalidate();
