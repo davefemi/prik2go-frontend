@@ -61,6 +61,7 @@ public class CustomerView extends JFrame implements ApiObserver {
                 this.setVisible(true);
                 controller.getVestigingStatus(vestigingMap ->{
                         this.remove(loading);
+                        this.setJMenuBar(builder.getMenu());
                         this.add(builder.getVestigingPaneel(vestigingMap), BorderLayout.WEST);
                         this.add(builder.getKlantenPaneel(), BorderLayout.CENTER);
                         this.revalidate();
@@ -88,13 +89,21 @@ public class CustomerView extends JFrame implements ApiObserver {
                                                 klanten.getAantalKlanten(), actie);
                                         this.revalidate();
                                         this.repaint();
-                                }, exception ->{});
-                                }, exception -> {builder.displayFoutMelding(locatie, "Er is een fout opgetreden");});
+                                }, e ->{
+                                        logger.warning(e.getMessage());
+                                });
+                                }, e -> {logger.warning(e.getMessage());
+                                builder.displayFoutMelding(locatie,
+                                        e instanceof IllegalAccessException
+                                                ?"No authorisation"
+                                                :"An error occurred"
+                                );
+                        });
                 }
                 else {
                         controller.getVestigingStatus(vestigingMap ->{
                                 builder.updateDisplay(vestigingMap);
-                        }, ex -> {});
+                        }, ex -> {logger.warning(ex.getMessage());});
                 }
         }
 
@@ -135,7 +144,7 @@ public class CustomerView extends JFrame implements ApiObserver {
                 public void actionPerformed(ActionEvent e) {
                                 controller.veranderVestigingStatus(geselecteerdeLocatie, ex ->{
                                         if (ex instanceof VestigingException){
-                                                BerichtDialoog.getInfoDialoog(getContentPane(), ex.getMessage());
+                                                BerichtDialoog.getInfoDialoog(getContentPane(), ex.getLocalizedMessage());
                                         }
                                         else {
                                                 BerichtDialoog.getErrorDialoog(getContentPane(), ex.getMessage());

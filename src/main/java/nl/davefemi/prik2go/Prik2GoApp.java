@@ -14,7 +14,6 @@ import nl.davefemi.prik2go.service.DataServiceInterface;
 import org.springframework.web.client.RestTemplate;
 
 import javax.swing.*;
-import java.util.concurrent.CancellationException;
 import java.util.logging.Logger;
 
 /**
@@ -41,25 +40,19 @@ public class Prik2GoApp {
                 service = new DataService((ApiClient) apiSubject);
                 try {
                         UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-                        Authenticator.login(session ->{
-                                ((ApiClient) apiSubject).setSession(session);
-                                try {
-                                        startSessie();
-                                } catch (ApplicatieException e) {
-                                        BerichtDialoog.getErrorDialoog(null, e.getMessage());
-                                }
-                        }, e->{
-                                if(e instanceof CancellationException){
-                                        return;
-                                }
-                                else BerichtDialoog.getErrorDialoog(null, e.getMessage());
-                                init();
-                        });
+                        boolean result = Authenticator.validateSession();
+
+                        if (!result){
+                                System.exit(0);
+                        }
+                        startSessie();
                 }
                 catch (Exception e) {
                         if(e instanceof UnsupportedLookAndFeelException) {
                                 logger.warning(e.getMessage());
                         }
+                        BerichtDialoog.getErrorDialoog(null, e.getMessage());
+                        System.exit(0);
                 }
         }
 
@@ -88,7 +81,7 @@ public class Prik2GoApp {
          * Methode voor het opstarten van de sessie met de creatie van de VestigingController
          * en de VestigingView.
          */
-        private static void startSessie() throws ApplicatieException {
+        private static void startSessie() throws ApplicatieException, IllegalAccessException {
                                 CustomerViewController customerViewController = new CustomerViewController(service);
                                 SwingUtilities.invokeLater(() -> {
                                         CustomerView gui = new CustomerView(customerViewController);
@@ -97,4 +90,6 @@ public class Prik2GoApp {
                                         gui.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
                                 });
         }
+
+
 }
