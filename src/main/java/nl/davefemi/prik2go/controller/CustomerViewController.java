@@ -1,9 +1,7 @@
 package nl.davefemi.prik2go.controller;
 
-import com.fasterxml.jackson.databind.node.BooleanNode;
 import nl.davefemi.prik2go.dto.KlantenDTO;
 import nl.davefemi.prik2go.exceptions.ApplicatieException;
-import nl.davefemi.prik2go.exceptions.VestigingException;
 import nl.davefemi.prik2go.service.DataServiceInterface;
 
 import javax.swing.*;
@@ -32,7 +30,7 @@ public class CustomerViewController {
          * @throws ApplicatieException als er een fout optreedt met de verbinding met de
          * database
          */
-        public CustomerViewController(DataServiceInterface service) throws ApplicatieException {
+        public CustomerViewController(DataServiceInterface service) throws ApplicatieException, IllegalAccessException {
                 this.service = service;
                 initVestigingen();
         }
@@ -40,7 +38,7 @@ public class CustomerViewController {
         /**
          * Verzorgt de initialisatie van de Vestiging-arraylist.
          */
-        private void initVestigingen() throws ApplicatieException {
+        private void initVestigingen() throws ApplicatieException, IllegalAccessException {
                 vestigingen = service.getVestigingen();
         }
 
@@ -58,10 +56,9 @@ public class CustomerViewController {
          * Geeft de KlantenDTO voor de gegeven locatie terug. Als er geen locatie gekozen is, of de 
          * terugkeerwaarde van de dto is null, wordt een exceptie opgegooid.
          * @param locatie van de vestiging
-         * @return KlantenDTO met klantgegevens voor de gegeven locatie
          */
         public void getKlantenDTO(String locatie, Consumer<KlantenDTO> callback, Consumer<Exception> exceptionConsumer) {
-                SwingWorker worker = new SwingWorker<KlantenDTO, Void>() {
+                SwingWorker<KlantenDTO, Void> worker = new SwingWorker<>() {
                         @Override
                         protected KlantenDTO doInBackground() throws Exception {
                                 return service.getKlantenDTO(locatie);
@@ -70,7 +67,7 @@ public class CustomerViewController {
                         @Override
                         protected void done(){
                             try {
-                                KlantenDTO result = (KlantenDTO) get();
+                                KlantenDTO result = get();
                                 callback.accept(result);
                             } catch (Exception e) {
                                 exceptionConsumer.accept((Exception) e.getCause());
@@ -79,41 +76,15 @@ public class CustomerViewController {
                 };
                 worker.execute();
         }
-        
-        /**
-         * Geeft de status van de vestiging terug Als de vestiging open is, zal de status 'true'
-         * zijn. Als een vestiging gesloten is, zal de status 'false' zijn.
-         * @return boolean
-         */
-        public void getVestigingStatus2(String locatie, Consumer<Boolean> callback, Consumer<Exception> exceptionConsumer)  {
-                SwingWorker worker = new SwingWorker<Boolean, Void>() {
-                        @Override
-                        protected Boolean doInBackground() throws Exception {
-                                return service.getVestigingStatus(locatie);
-                        }
-
-                        @Override
-                        protected void done(){
-                                try {
-                                        boolean result = (Boolean) get();
-                                        callback.accept(result);
-                                }
-                                catch (Exception e){
-                                        exceptionConsumer.accept((Exception) e.getCause());
-                                }
-                        }
-                };
-                worker.execute();
-        }
 
         public void getVestigingStatus(Consumer<Map<String, Boolean>> callback, Consumer<Exception> exceptionHandling) {
-                SwingWorker worker = new SwingWorker<List<Future<Boolean>>, Void>() {
+                SwingWorker<List<Future<Boolean>>, Void> worker = new SwingWorker<>() {
                         @Override
-                        protected List<Future<Boolean>> doInBackground() throws Exception {
+                        protected List<Future<Boolean>> doInBackground() {
                                 ExecutorService pool = Executors.newFixedThreadPool(Math.min(12, vestigingen.size()));
-                                List<Future<Boolean>> futures = new ArrayList<Future<Boolean>>();
+                                List<Future<Boolean>> futures = new ArrayList<>();
                                 for (String v : vestigingen) {
-                                        Future future = pool.submit(() ->
+                                        Future<Boolean> future = pool.submit(() ->
                                                 service.getVestigingStatus(v));
                                         futures.add(future);
                                 }
@@ -124,8 +95,8 @@ public class CustomerViewController {
                         @Override
                         protected void done() {
                                 try {
-                                        List<Future<Boolean>> futures = (List<Future<Boolean>>) get();
-                                        Map<String, Boolean> nieuweMap = new TreeMap<String, Boolean>();
+                                        List<Future<Boolean>> futures = get();
+                                        Map<String, Boolean> nieuweMap = new TreeMap<>();
                                         for (int i = 0; i<futures.size(); i++) {
                                                 nieuweMap.put(vestigingen.get(i), futures.get(i).get());
                                         }
@@ -142,11 +113,9 @@ public class CustomerViewController {
         /**
          * Methode zal aan de hand van de huidige vestigingsstatus kiezen tussen een sluiting
          * of heropening van de gegeven locatie.
-         * @throws VestigingException als alle vestigingen status 'gesloten' bereiken wordt deze
-         * exceptie opgegooid
          */
         public void veranderVestigingStatus(String locatie, Consumer<Exception> exceptionHandling) {
-                SwingWorker worker = new SwingWorker<Void, Void>() {
+                SwingWorker<Void, Void> worker = new SwingWorker<>() {
                         @Override
                         protected Void doInBackground() throws Exception {
                                 service.veranderVestigingStatus(locatie);
@@ -160,7 +129,7 @@ public class CustomerViewController {
                             } catch (InterruptedException e) {
                                 throw new RuntimeException(e);
                             } catch (ExecutionException e) {
-                                    exceptionHandling.accept((Exception) e);
+                                    exceptionHandling.accept((Exception) e.getCause());
                             }
                         }
                 };

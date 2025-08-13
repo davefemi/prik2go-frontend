@@ -15,4 +15,8 @@ public class AuthService {
         }
         return null;
     }
+
+    public SessionDTO changePassword(UserDTO user) throws ApplicatieException {
+        return AuthClient.changePassword(user).getBody();
+    }
 }

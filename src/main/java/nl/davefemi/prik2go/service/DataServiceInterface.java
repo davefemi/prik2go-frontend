@@ -9,11 +9,11 @@ import java.util.Map;
 
 public interface DataServiceInterface {
 
-    List<String> getVestigingen() throws ApplicatieException;
+    List<String> getVestigingen() throws ApplicatieException, IllegalAccessException;
 
-    KlantenDTO getKlantenDTO(String locatie);
+    KlantenDTO getKlantenDTO(String locatie) throws IllegalAccessException, ApplicatieException;
 
-    boolean getVestigingStatus(String locatie) throws ApplicatieException;
+    boolean getVestigingStatus(String locatie) throws ApplicatieException, IllegalAccessException;
 
-    void veranderVestigingStatus(String locatie) throws VestigingException, ApplicatieException;
+    void veranderVestigingStatus(String locatie) throws VestigingException, ApplicatieException, IllegalAccessException;
 }
