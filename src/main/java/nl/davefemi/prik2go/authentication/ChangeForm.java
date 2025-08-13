@@ -2,17 +2,16 @@ package nl.davefemi.prik2go.authentication;
 
 import nl.davefemi.prik2go.dto.UserDTO;
 import nl.davefemi.prik2go.gui.factory.components.SpringUtilities;
-
 import javax.naming.LimitExceededException;
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.awt.event.ActionEvent;
 import java.util.concurrent.CancellationException;
+import static java.awt.event.KeyEvent.VK_ENTER;
 
 public class ChangeForm extends JPanel {
     private JOptionPane pane;
-    private final String[] options = {"SAVE", "CANCEL"};
+    private final String[] options = {"Save", "Cancel"};
     private static final String CURRENT_PASSWORD = "Current password";
     private static final String REPEAT_NEW_PASSWORD = "Repeat new password";
     private static final String NEW_PASSWORD = "New password";
@@ -23,7 +22,6 @@ public class ChangeForm extends JPanel {
     private static final JPasswordField[] PASSWORD_FIELDS = {passwordField, newPasswordField, repeatNewPasswordField};
     private final ChangeForm panel = this;
     private JLabel error;
-    private List<JPasswordField> passwordInput = new ArrayList<>();
 
     public ChangeForm(){
         super();
@@ -44,6 +42,7 @@ public class ChangeForm extends JPanel {
             panel.add(l);
             PASSWORD_FIELDS[i].setText("");
             l.setLabelFor(PASSWORD_FIELDS[i]);
+            setAction(PASSWORD_FIELDS[i]);
             panel.add(PASSWORD_FIELDS[i]);
         }
         JLabel l = new JLabel("", JLabel.TRAILING);
@@ -52,19 +51,22 @@ public class ChangeForm extends JPanel {
         l.setLabelFor(error);
         panel.add(l);
         panel.add(error);
-        SpringUtilities.makeCompactGrid(panel, 4, 2,10,10, 10,15);
+        SpringUtilities.makeCompactGrid(panel,
+                4, 2,
+                10,10,
+                10,15);
         this.panel.add(panel, BorderLayout.CENTER);
     }
-
 
     public UserDTO getUserInput() throws LimitExceededException {
         int retries = 5;
         while(retries --> 0) {
             try {
-                pane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION, null, options);
+                pane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE,
+                        JOptionPane.DEFAULT_OPTION, null, options);
                 JDialog dialog = pane.createDialog("Change password");
                 dialog.setSize(500, 250);
-                dialog.show();
+                dialog.setVisible(true);
                 return processInput();
             } catch (IllegalArgumentException e) {
                 error.setText(e.getMessage());
@@ -77,9 +79,11 @@ public class ChangeForm extends JPanel {
     }
 
     private UserDTO processInput() throws IllegalArgumentException{
-        String result = (String) pane.getValue();
         error.setText("");
-        if (result.equals("SAVE")){
+        if (!(pane.getValue() instanceof String))
+            throw new CancellationException("User closed window");
+        String result = (String) pane.getValue();
+        if (result != null && result.equals("Save")){
             if ((new String(passwordField.getPassword()).isBlank()
                     || new String(newPasswordField.getPassword()).isBlank()
                     || new String(repeatNewPasswordField.getPassword()).isBlank())) {
@@ -97,5 +101,21 @@ public class ChangeForm extends JPanel {
             return dto;
         }
         throw new CancellationException("User cancelled");
+    }
+
+    private void setAction(JPasswordField field){
+        field.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                .put(KeyStroke.getKeyStroke(VK_ENTER, 0),
+                        "action");
+        field.getActionMap().put("action", getAction());
+    }
+
+    private AbstractAction getAction(){
+        return new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pane.setValue(options[0]);
+            }
+        };
     }
 }

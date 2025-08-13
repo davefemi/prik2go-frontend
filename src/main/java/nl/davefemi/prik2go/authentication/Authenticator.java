@@ -31,7 +31,10 @@ public class Authenticator {
         }
         try {
             return handleLogin();
-        } catch (Exception e) {
+        } catch (CancellationException e) {
+            throw new CancellationException(e.getMessage());
+        }
+        catch (Exception e){
             throw new IllegalAccessException("Login failed: " + e.getMessage());
         }
     }
@@ -53,8 +56,7 @@ public class Authenticator {
                 BerichtDialoog.getErrorDialoog(null, e.getMessage());
             }
         }
-
-        return false;
+        throw new LimitExceededException("Too many attempts");
     }
 
     private static UserDTO getUserCredentials() throws Exception {

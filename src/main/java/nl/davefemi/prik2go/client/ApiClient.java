@@ -43,6 +43,9 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     private synchronized HttpEntity<String> getHttpRequest() throws IllegalAccessException, ApplicatieException {
         if (Authenticator.validateSession()) {
             SessionDTO session = Authenticator.getSession();
+            if (session == null){
+                throw new IllegalAccessException("No authorisation");
+            }
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("Authorization", "Bearer " + session.getToken());

@@ -14,6 +14,7 @@ import nl.davefemi.prik2go.service.DataServiceInterface;
 import org.springframework.web.client.RestTemplate;
 
 import javax.swing.*;
+import java.util.concurrent.CancellationException;
 import java.util.logging.Logger;
 
 /**
@@ -51,7 +52,9 @@ public class Prik2GoApp {
                         if(e instanceof UnsupportedLookAndFeelException) {
                                 logger.warning(e.getMessage());
                         }
-                        BerichtDialoog.getErrorDialoog(null, e.getMessage());
+                        if(!(e instanceof CancellationException)) {
+                                BerichtDialoog.getErrorDialoog(null, e.getMessage());
+                        }
                         System.exit(0);
                 }
         }
