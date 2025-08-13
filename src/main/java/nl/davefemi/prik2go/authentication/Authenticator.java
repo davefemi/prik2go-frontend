@@ -6,12 +6,9 @@ import nl.davefemi.prik2go.exceptions.ApplicatieException;
 import nl.davefemi.prik2go.exceptions.BerichtDialoog;
 import nl.davefemi.prik2go.service.AuthService;
 
-import javax.swing.*;
-import java.lang.reflect.InvocationTargetException;
+import javax.naming.LimitExceededException;
 import java.time.Instant;
-import java.util.UUID;
 import java.util.concurrent.*;
-import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 public class Authenticator {
@@ -28,28 +25,30 @@ public class Authenticator {
         return session;
     }
 
-    public static boolean ensureValidSession() throws IllegalAccessException {
-        if (isSessionValid()) return true;
-
+    public static boolean validateSession() throws IllegalAccessException {
+        if (isSessionValid()) {
+            return true;
+        }
         try {
-            return performLoginBlocking();
+            return handleLogin();
         } catch (Exception e) {
             throw new IllegalAccessException("Login failed: " + e.getMessage());
         }
     }
 
-    private static boolean performLoginBlocking() throws Exception {
+    private static boolean handleLogin() throws Exception {
         int attempts = RETRIES;
-
         while (attempts-- > 0) {
-            UserDTO credentials = promptCredentials();
-            if (credentials == null) throw new CancellationException("Login cancelled");
-
             try {
+                UserDTO credentials = getUserCredentials();
+                if (credentials == null) throw new CancellationException("Login cancelled");
                 session = authService.loginUser(credentials);
                 log.info("Authentication successful");
                 return true;
-            } catch (ApplicatieException e) {
+            } catch (Exception e) {
+                if (e instanceof CancellationException){
+                    throw new CancellationException(e.getMessage());
+                }
                 log.warning("Login failed: " + e.getMessage());
                 BerichtDialoog.getErrorDialoog(null, e.getMessage());
             }
@@ -58,25 +57,19 @@ public class Authenticator {
         return false;
     }
 
-    private static UserDTO promptCredentials() throws Exception {
-        final UserDTO[] userHolder = new UserDTO[1];
-        final Exception[] errorHolder = new Exception[1];
-        CountDownLatch latch = new CountDownLatch(1);
+    private static UserDTO getUserCredentials() throws Exception {
+        LoginForm form = new LoginForm();
+        return form.getUserLogin(session != null ? session.getUser() : null);
+    }
 
-        SwingUtilities.invokeLater(() -> {
-            try {
-                LoginForm form = new LoginForm();
-                userHolder[0] = form.getUserLogin(null);
-            } catch (Exception e) {
-                errorHolder[0] = e;
-            } finally {
-                latch.countDown();
-            }
-        });
-
-        latch.await();
-
-        if (errorHolder[0] != null) throw errorHolder[0];
-        return userHolder[0];
+    public static boolean changePassword() throws IllegalAccessException, LimitExceededException, ApplicatieException {
+        if (!isSessionValid()) {
+            validateSession();
+        }
+        ChangeForm form = new ChangeForm();
+            UserDTO dto = form.getUserInput();
+            dto.setUser(session.getUser());
+            authService.changePassword(dto);
+            return true;
     }
 }

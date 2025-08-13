@@ -14,8 +14,6 @@ import nl.davefemi.prik2go.service.DataServiceInterface;
 import org.springframework.web.client.RestTemplate;
 
 import javax.swing.*;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.Future;
 import java.util.logging.Logger;
 
 /**
@@ -42,7 +40,7 @@ public class Prik2GoApp {
                 service = new DataService((ApiClient) apiSubject);
                 try {
                         UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-                        boolean result = Authenticator.ensureValidSession();
+                        boolean result = Authenticator.validateSession();
 
                         if (!result){
                                 System.exit(0);

@@ -8,9 +8,9 @@ import java.util.concurrent.CancellationException;
 public class LoginForm extends JPanel {
     private static final JLabel EMAIL = new JLabel("E-mail");
     private final JLabel PASSWORD = new JLabel("Password");
-    private JTextField emailField = new JTextField(20);
-    private JPasswordField passwordField = new JPasswordField(20);
-    private LoginForm panel = this;
+    private final JTextField emailField = new JTextField(20);
+    private final JPasswordField passwordField = new JPasswordField(20);
+    private final LoginForm panel = this;
 
     public LoginForm(){
         super();

@@ -4,7 +4,6 @@ import nl.davefemi.prik2go.authentication.Authenticator;
 import nl.davefemi.prik2go.dto.KlantenDTO;
 import nl.davefemi.prik2go.dto.SessionDTO;
 import nl.davefemi.prik2go.exceptions.ApplicatieException;
-import nl.davefemi.prik2go.exceptions.BerichtDialoog;
 import nl.davefemi.prik2go.observer.ApiSubject;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -15,9 +14,7 @@ import javax.swing.*;
 import javax.swing.Timer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.concurrent.*;
 
 public class ApiClient extends ApiSubject implements ApiClientInterface {
     private static final Log log = LogFactory.getLog(ApiClient.class);
@@ -44,7 +41,7 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     }
 
     private synchronized HttpEntity<String> getHttpRequest() throws IllegalAccessException, ApplicatieException {
-        if (Authenticator.ensureValidSession()) {
+        if (Authenticator.validateSession()) {
             SessionDTO session = Authenticator.getSession();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
