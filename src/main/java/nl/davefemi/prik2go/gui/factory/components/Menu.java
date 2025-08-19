@@ -35,7 +35,8 @@ public class Menu extends JMenuBar {
         login.addActionListener(e -> {
             try {
                 Authenticator.validateSession();
-            } catch (IllegalAccessException ex) {
+            } catch (Exception ex) {
+                if (!(ex instanceof CancellationException))
                 BerichtDialoog.getErrorDialoog(null, ex.getMessage());
             }
         });
