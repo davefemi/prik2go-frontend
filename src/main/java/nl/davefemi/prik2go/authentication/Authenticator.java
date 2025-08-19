@@ -17,7 +17,7 @@ public class Authenticator {
     private static volatile SessionDTO session;
     private static final int RETRIES = 5;
 
-    public static synchronized boolean isSessionValid() {
+    private static synchronized boolean isSessionValid() {
         return session != null && session.getExpiresAt().isAfter(Instant.now().plusSeconds(30));
     }
 
@@ -30,6 +30,7 @@ public class Authenticator {
             return true;
         }
         try {
+            session = null;
             return handleLogin();
         } catch (CancellationException e) {
             throw new CancellationException(e.getMessage());

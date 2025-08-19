@@ -7,16 +7,20 @@ import nl.davefemi.prik2go.dto.UserDTO;
 import nl.davefemi.prik2go.exceptions.ApplicatieException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.*;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+
+import java.io.IOError;
+import java.io.IOException;
 import java.net.URI;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 public class AuthClient {
     private static final RestTemplate restTemplate = new RestTemplate();
-//        private static final String URL = "https://prik2go-backend.onrender.com/public/auth/%s";
-    private static final String URL = "http://localhost:8080/auth/%s";
+        private static final String URL = "https://prik2go-backend.onrender.com/auth/%s";
+//    private static final String URL = "http://localhost:8080/auth/%s";
 
     @Bean
     public ObjectMapper objectMapper() {
@@ -43,8 +47,11 @@ public class AuthClient {
             return restTemplate.exchange(request, SessionDTO.class);
         } catch (HttpClientErrorException e) {
             throw new ApplicatieException("Unauthorized: login failed");
-        } catch (Exception e) {
-            throw new ApplicatieException(e.getMessage());
+        } catch (RestClientException e){
+            throw new ApplicatieException("Network is unreachable");
+        }
+        catch (Exception e) {
+            throw new ApplicatieException(e.getCause().getMessage());
         }
     }
 
@@ -58,7 +65,7 @@ public class AuthClient {
                     UserDTO.class);
             return restTemplate.exchange(request, SessionDTO.class);
         } catch (HttpClientErrorException e) {
-            throw new ApplicatieException(e.getMessage());
+            throw new ApplicatieException(e.getResponseBodyAsString().isBlank()? "Authentication failed" : e.getResponseBodyAsString());
         } catch (Exception e) {
             throw new ApplicatieException(e.getMessage());
         }

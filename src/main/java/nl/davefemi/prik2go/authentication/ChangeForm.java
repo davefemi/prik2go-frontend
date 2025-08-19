@@ -29,12 +29,19 @@ public class ChangeForm extends JPanel {
     }
 
     private void buildPanel(){
-        panel.setSize(400,400);
         panel.setLayout(new GridLayout(0,1));
-        panel.addPasswordFields();
+        panel.addForm();
     }
 
-    private void addPasswordFields(){
+    private void addForm(){
+        JPanel form = new JPanel();
+        form.setLayout(new BorderLayout());
+        addPasswordFields(form);
+        addErrorField(form);
+        panel.add(form);
+    }
+
+    private void addPasswordFields(JPanel parent){
         JPanel panel = new JPanel();
         panel.setLayout(new SpringLayout());
         for (int i = 0; i< LABELS.length; i++){
@@ -45,17 +52,19 @@ public class ChangeForm extends JPanel {
             setAction(PASSWORD_FIELDS[i]);
             panel.add(PASSWORD_FIELDS[i]);
         }
-        JLabel l = new JLabel("", JLabel.TRAILING);
-        error = new JLabel();
-        error.setForeground(Color.RED);
-        l.setLabelFor(error);
-        panel.add(l);
-        panel.add(error);
+
         SpringUtilities.makeCompactGrid(panel,
-                4, 2,
+                3, 2,
                 10,10,
                 10,15);
-        this.panel.add(panel, BorderLayout.CENTER);
+        parent.add(panel, BorderLayout.CENTER);
+    }
+
+    private void addErrorField(JPanel parent){
+        error = new JLabel();
+        error.setHorizontalAlignment(SwingConstants.CENTER);
+        error.setForeground(Color.RED);
+        parent.add(error, BorderLayout.SOUTH);
     }
 
     public UserDTO getUserInput() throws LimitExceededException {
@@ -65,7 +74,7 @@ public class ChangeForm extends JPanel {
                 pane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE,
                         JOptionPane.DEFAULT_OPTION, null, options);
                 JDialog dialog = pane.createDialog("Change password");
-                dialog.setSize(500, 250);
+                dialog.setSize(400, 250);
                 dialog.setVisible(true);
                 return processInput();
             } catch (IllegalArgumentException e) {
@@ -87,10 +96,12 @@ public class ChangeForm extends JPanel {
             if ((new String(passwordField.getPassword()).isBlank()
                     || new String(newPasswordField.getPassword()).isBlank()
                     || new String(repeatNewPasswordField.getPassword()).isBlank())) {
+                panel.getToolkit().beep();
                 throw new IllegalArgumentException("Fields cannot be blank");
             }
             if (!new String(newPasswordField.getPassword())
                     .equals(new String(repeatNewPasswordField.getPassword()))){
+                panel.getToolkit().beep();
                 throw new IllegalArgumentException("New password values must be the same");
             }
             UserDTO dto = new UserDTO();

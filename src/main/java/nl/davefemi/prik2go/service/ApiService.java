@@ -8,7 +8,7 @@ import nl.davefemi.prik2go.exceptions.VestigingException;
 import java.util.*;
 
 @RequiredArgsConstructor
-public class DataService implements DataServiceInterface {
+public class ApiService implements DataServiceInterface {
     private final ApiClientInterface client;
 
     @Override

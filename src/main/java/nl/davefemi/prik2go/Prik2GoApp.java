@@ -9,7 +9,7 @@ import nl.davefemi.prik2go.gui.CustomerView;
 import nl.davefemi.prik2go.gui.VisualizerView;
 import nl.davefemi.prik2go.controller.CustomerViewController;
 import nl.davefemi.prik2go.observer.ApiSubject;
-import nl.davefemi.prik2go.service.DataService;
+import nl.davefemi.prik2go.service.ApiService;
 import nl.davefemi.prik2go.service.DataServiceInterface;
 import org.springframework.web.client.RestTemplate;
 
@@ -38,7 +38,7 @@ public class Prik2GoApp {
         private static void init(){
                 logger.info("Applicatie wordt opgestart");
                 apiSubject = new ApiClient(new RestTemplate());
-                service = new DataService((ApiClient) apiSubject);
+                service = new ApiService((ApiClient) apiSubject);
                 try {
                         UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
                         boolean result = Authenticator.validateSession();

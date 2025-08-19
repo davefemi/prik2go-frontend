@@ -7,10 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import javax.swing.*;
-import javafx.application.Platform;
-import javafx.embed.swing.JFXPanel;
-import javafx.scene.Scene;
-import javafx.scene.control.ProgressIndicator;
+
 import nl.davefemi.prik2go.controller.VisualizerControllerInterface;
 import nl.davefemi.prik2go.exceptions.ApplicatieException;
 import nl.davefemi.prik2go.exceptions.BerichtDialoog;
@@ -159,16 +156,6 @@ public class VisualizerView extends JFrame implements ApiObserver {
                 return max;
         }
 
-        private void setProgress(){
-                this.removeAll();
-                JFXPanel fxPanel = new JFXPanel();
-                SwingUtilities.invokeLater(() -> this.add(fxPanel));
-                Platform.runLater(() -> {
-                        ProgressIndicator indicator = new ProgressIndicator();
-                        fxPanel.setScene(new Scene(indicator));
-                });
-        }
-        
         /**
          * Bij notificatie van VestigingSubject object worden nieuwe gegevens opgehaald en getoond op
          * het scherm. In het geval van een exceptie wordt een error dialoog getoond.
