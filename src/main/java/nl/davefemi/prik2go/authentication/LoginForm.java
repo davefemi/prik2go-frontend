@@ -1,38 +1,59 @@
 package nl.davefemi.prik2go.authentication;
 
 import nl.davefemi.prik2go.dto.UserDTO;
+import nl.davefemi.prik2go.gui.factory.components.SpringUtilities;
+
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
 
-public class LoginForm extends JPanel {
-    private static final JLabel EMAIL = new JLabel("E-mail");
-    private final JLabel PASSWORD = new JLabel("Password");
-    private final JTextField emailField = new JTextField(20);
-    private final JPasswordField passwordField = new JPasswordField(20);
-    private final LoginForm panel = this;
+import static java.awt.event.KeyEvent.VK_ENTER;
 
-    public LoginForm(){
+public class LoginForm extends JPanel {
+    private static final JLabel EMAIL = new JLabel("E-mail", JLabel.TRAILING);
+    private final JLabel PASSWORD = new JLabel("Password", JLabel.TRAILING);
+    private JTextField emailField = new JTextField(20);
+    private JPasswordField passwordField = new JPasswordField(20);
+    private final LoginForm panel = this;
+    private JOptionPane pane;
+    private final String[] options = {"OK", "Cancel"};
+
+    public LoginForm() {
         super();
         buildPanel();
     }
 
-    private void buildPanel(){
-        panel.setSize(400,400);
-        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-        panel.add(EMAIL);
-        panel.add(Box.createHorizontalStrut(5));
-        emailField.setFocusable(true);
-        panel.add(emailField);
-        panel.add(Box.createHorizontalStrut(10));
-        panel.add(PASSWORD);
-        panel.add(Box.createHorizontalStrut(5));
-        panel.add(passwordField);
+    private void buildPanel() {
+        panel.setLayout(new GridLayout(1, 0));
+        getFields();
     }
 
-    public UserDTO getUserLogin(UUID user){
-        int result = JOptionPane.showConfirmDialog(null, panel, "Login", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-        if (result == JOptionPane.OK_OPTION){
+    private void getFields(){
+        JPanel panel = new JPanel();
+        panel.setLayout(new SpringLayout());
+        panel.add(EMAIL);
+        EMAIL.setLabelFor(emailField);
+        setAction(emailField);
+        panel.add(emailField);
+        panel.add(PASSWORD);
+        PASSWORD.setLabelFor(passwordField);
+        setAction(passwordField);
+        panel.add(passwordField);
+        SpringUtilities.makeCompactGrid(panel,
+                1, 4,
+                5, 5,
+                5, 5);
+        this.panel.add(panel, BorderLayout.CENTER);
+    }
+
+    public UserDTO getUserLogin(UUID user) {
+        getForm();
+        if (!(pane.getValue() instanceof String))
+            throw new CancellationException("User closed window");
+        String result = (String) pane.getValue();
+        if (result != null && result.equals("OK")) {
             if (!(emailField.getText().isBlank() || new String(passwordField.getPassword()).isBlank())) {
                 UserDTO dto = new UserDTO();
                 dto.setEmail(emailField.getText());
@@ -40,11 +61,36 @@ public class LoginForm extends JPanel {
                 emailField.setText("");
                 passwordField.setText("");
                 return dto;
-            }
-            else{
+            } else {
                 throw new IllegalArgumentException("Fields cannot be blank");
             }
         }
         throw new CancellationException("You must enter a password");
     }
+
+
+    private void getForm() {
+        pane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE,
+                JOptionPane.DEFAULT_OPTION, null, options);
+        JDialog dialog = pane.createDialog("Login");
+        dialog.setSize(600, 125);
+        dialog.setVisible(true);
+    }
+
+    private void setAction(JTextField field){
+        field.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                .put(KeyStroke.getKeyStroke(VK_ENTER, 0),
+                        "action");
+        field.getActionMap().put("action", getAction());
+    }
+
+    private AbstractAction getAction(){
+        return new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pane.setValue(options[0]);
+            }
+        };
+    }
 }
+
