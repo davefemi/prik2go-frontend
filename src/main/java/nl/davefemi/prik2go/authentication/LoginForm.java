@@ -1,11 +1,15 @@
 package nl.davefemi.prik2go.authentication;
 
 import nl.davefemi.prik2go.dto.UserDTO;
+import nl.davefemi.prik2go.exceptions.ApplicatieException;
+import nl.davefemi.prik2go.exceptions.BerichtDialoog;
 import nl.davefemi.prik2go.gui.factory.components.SpringUtilities;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
 
@@ -27,7 +31,7 @@ public class LoginForm extends JPanel {
     }
 
     private void buildPanel() {
-        panel.setLayout(new GridLayout(1, 0));
+        panel.setLayout(new GridLayout(2, 0));
         getFields();
     }
 
@@ -47,7 +51,22 @@ public class LoginForm extends JPanel {
                 5, 5,
                 5, 5);
         this.panel.add(panel, BorderLayout.CENTER);
-        this.panel.add(googleField, BorderLayout.NORTH);
+        addGoogleField();
+    }
+
+    private void addGoogleField(){
+        googleField.setHorizontalAlignment(SwingConstants.CENTER);
+        googleField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                try {
+                    Authenticator.loginWithGoogle();
+                } catch (ApplicatieException ex) {
+                    BerichtDialoog.getErrorDialoog(panel, ex.getMessage());
+                }
+            }
+        });
+        this.panel.add(googleField);
     }
 
     public UserDTO getUserLogin(UUID user) {
@@ -75,7 +94,7 @@ public class LoginForm extends JPanel {
         pane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE,
                 JOptionPane.DEFAULT_OPTION, null, options);
         JDialog dialog = pane.createDialog("Login");
-        dialog.setSize(600, 125);
+        dialog.setSize(600, 165);
         dialog.setVisible(true);
     }
 

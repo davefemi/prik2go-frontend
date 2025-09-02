@@ -9,21 +9,21 @@ import nl.davefemi.prik2go.exceptions.ApplicatieException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.awt.*;
-import java.awt.desktop.QuitStrategy;
-import java.io.IOError;
-import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
+
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 public class AuthClient {
     private static final RestTemplate restTemplate = new RestTemplate();
 //        private static final String URL = "https://prik2go-backend.onrender.com/auth/%s";
     private static final String URL = "http://localhost:8080/%s";
+    private static final String LINK_GOOGLE = "private/oauth2/request/start";
+    private static final String LOGIN_GOOGLE = "oauth2/request/start";
 
     @Bean
     public ObjectMapper objectMapper() {
@@ -82,13 +82,33 @@ public class AuthClient {
         }
     }
 
-    public static void thirdPartyLogin() throws ApplicatieException {
-        SessionDTO sessionDTO = Authenticator.getSession();
-        try{
+    public static void linkGoogleAccount() throws ApplicatieException {
+        try {
             RequestEntity<UserDTO> request = new RequestEntity(
                     getOauth2HttpRequest().getHeaders(),
                     HttpMethod.GET,
-                    new URI(String.format(URL, "private/oauth2/request/start")));
+                    new URI(String.format(URL, LINK_GOOGLE)));
+            thirdPartyLogin(request);
+        } catch (Exception e) {
+            throw new ApplicatieException(e.getMessage());
+            }
+    }
+
+    public static void setLoginGoogle() throws ApplicatieException {
+        try {
+            RequestEntity<UserDTO> request = new RequestEntity(
+                    HttpMethod.GET,
+                    new URI(String.format(URL, LOGIN_GOOGLE)));
+            thirdPartyLogin(request);
+        } catch (Exception e) {
+            throw new ApplicatieException(e.getMessage());
+        }
+    }
+
+    public static void thirdPartyLogin(RequestEntity<UserDTO> request) throws ApplicatieException {
+        SessionDTO sessionDTO = Authenticator.getSession();
+        try{
+
             AuthResponseDTO dto = restTemplate.exchange(request, AuthResponseDTO.class).getBody();
             Desktop.getDesktop().browse(URI.create(dto.getUrl()));
         } catch (HttpClientErrorException e) {
@@ -100,4 +120,5 @@ public class AuthClient {
             throw new ApplicatieException(e.getCause().getMessage());
         }
     }
+
 }

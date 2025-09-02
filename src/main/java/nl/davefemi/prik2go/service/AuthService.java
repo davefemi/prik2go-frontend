@@ -21,6 +21,10 @@ public class AuthService {
     }
 
     public void linkGoogleAccount() throws ApplicatieException {
-        AuthClient.thirdPartyLogin();
+        AuthClient.linkGoogleAccount();
+    }
+
+    public void loginGoogleAccount() throws ApplicatieException {
+        AuthClient.setLoginGoogle();
     }
 }

@@ -86,4 +86,9 @@ public class Authenticator {
             BerichtDialoog.getErrorDialoog(null, e.getMessage());
         }
     }
+
+    public static boolean loginWithGoogle() throws ApplicatieException {
+        authService.loginGoogleAccount();
+        return true;
+    }
 }
