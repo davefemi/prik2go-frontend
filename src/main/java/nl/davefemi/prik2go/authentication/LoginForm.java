@@ -60,7 +60,7 @@ public class LoginForm extends JPanel {
             @Override
             public void mousePressed(MouseEvent e) {
                 try {
-                    Authenticator.loginWithGoogle();
+                    if (Authenticator.loginWithGoogle());
                 } catch (ApplicatieException ex) {
                     BerichtDialoog.getErrorDialoog(panel, ex.getMessage());
                 }

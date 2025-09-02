@@ -1,6 +1,7 @@
 package nl.davefemi.prik2go.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.SneakyThrows;
 import nl.davefemi.prik2go.authentication.Authenticator;
 import nl.davefemi.prik2go.dto.AuthResponseDTO;
 import nl.davefemi.prik2go.dto.SessionDTO;
@@ -11,19 +12,18 @@ import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-
 import java.awt.*;
 import java.net.URI;
-import java.net.URISyntaxException;
 
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 public class AuthClient {
     private static final RestTemplate restTemplate = new RestTemplate();
-//        private static final String URL = "https://prik2go-backend.onrender.com/auth/%s";
-    private static final String URL = "http://localhost:8080/%s";
+    //        private static final String URL = "https://prik2go-backend.onrender.com/auth/%s";
+    private static final String BASE_URL = "http://localhost:8080/%s";
     private static final String LINK_GOOGLE = "private/oauth2/request/start";
     private static final String LOGIN_GOOGLE = "oauth2/request/start";
+    private static AuthResponseDTO authResponseDTO;
 
     @Bean
     public ObjectMapper objectMapper() {
@@ -49,34 +49,33 @@ public class AuthClient {
 
 
     public static ResponseEntity<SessionDTO> loginUser(UserDTO user) throws ApplicatieException {
-        try{
+        try {
             RequestEntity<UserDTO> request = new RequestEntity(
                     user,
                     HttpMethod.POST,
-                    new URI(String.format(URL, "auth/login")),
+                    new URI(String.format(BASE_URL, "auth/login")),
                     UserDTO.class);
             return restTemplate.exchange(request, SessionDTO.class);
         } catch (HttpClientErrorException e) {
             throw new ApplicatieException("Unauthorized: login failed");
-        } catch (RestClientException e){
+        } catch (RestClientException e) {
             throw new ApplicatieException("Network is unreachable");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new ApplicatieException(e.getCause().getMessage());
         }
     }
 
     public static ResponseEntity<SessionDTO> changePassword(UserDTO user) throws ApplicatieException {
-        try{
+        try {
             RequestEntity<UserDTO> request = new RequestEntity(
                     user,
                     getHttpRequest().getHeaders(),
                     HttpMethod.POST,
-                    new URI(String.format(URL, "auth/change-password")),
+                    new URI(String.format(BASE_URL, "auth/change-password")),
                     UserDTO.class);
             return restTemplate.exchange(request, SessionDTO.class);
         } catch (HttpClientErrorException e) {
-            throw new ApplicatieException(e.getResponseBodyAsString().isBlank()? "Authentication failed" : e.getResponseBodyAsString());
+            throw new ApplicatieException(e.getResponseBodyAsString().isBlank() ? "Authentication failed" : e.getResponseBodyAsString());
         } catch (Exception e) {
             throw new ApplicatieException(e.getMessage());
         }
@@ -87,18 +86,18 @@ public class AuthClient {
             RequestEntity<UserDTO> request = new RequestEntity(
                     getOauth2HttpRequest().getHeaders(),
                     HttpMethod.GET,
-                    new URI(String.format(URL, LINK_GOOGLE)));
+                    new URI(String.format(BASE_URL, LINK_GOOGLE)));
             thirdPartyLogin(request);
         } catch (Exception e) {
             throw new ApplicatieException(e.getMessage());
-            }
+        }
     }
 
     public static void setLoginGoogle() throws ApplicatieException {
         try {
             RequestEntity<UserDTO> request = new RequestEntity(
                     HttpMethod.GET,
-                    new URI(String.format(URL, LOGIN_GOOGLE)));
+                    new URI(String.format(BASE_URL, LOGIN_GOOGLE)));
             thirdPartyLogin(request);
         } catch (Exception e) {
             throw new ApplicatieException(e.getMessage());
@@ -107,16 +106,31 @@ public class AuthClient {
 
     public static void thirdPartyLogin(RequestEntity<UserDTO> request) throws ApplicatieException {
         SessionDTO sessionDTO = Authenticator.getSession();
-        try{
-
-            AuthResponseDTO dto = restTemplate.exchange(request, AuthResponseDTO.class).getBody();
-            Desktop.getDesktop().browse(URI.create(dto.getUrl()));
+        try {
+            authResponseDTO = restTemplate.exchange(request, AuthResponseDTO.class).getBody();
+            Desktop.getDesktop().browse(URI.create(authResponseDTO.getUrl()));
         } catch (HttpClientErrorException e) {
             throw new ApplicatieException("Unauthorized: login failed");
-        } catch (RestClientException e){
+        } catch (RestClientException e) {
             throw new ApplicatieException("Network is unreachable");
+        } catch (Exception e) {
+            throw new ApplicatieException(e.getCause().getMessage());
         }
-        catch (Exception e) {
+    }
+
+    public static ResponseEntity<SessionDTO> userAuthenticated() throws ApplicatieException {
+        try {
+            RequestEntity<AuthResponseDTO> request = new RequestEntity(
+                    authResponseDTO,
+                    HttpMethod.GET,
+                    new URI(String.format(BASE_URL, "/oauth2/request/get-session")),
+                    AuthResponseDTO.class);
+            return restTemplate.exchange(request, SessionDTO.class);
+        } catch (HttpClientErrorException e) {
+            throw new ApplicatieException("Unauthorized: login failed");
+        } catch (RestClientException e) {
+            throw new ApplicatieException("Network is unreachable");
+        } catch (Exception e) {
             throw new ApplicatieException(e.getCause().getMessage());
         }
     }

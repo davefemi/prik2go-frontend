@@ -9,7 +9,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -23,8 +22,8 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     private static final Log log = LogFactory.getLog(ApiClient.class);
     private final Timer timer = new Timer(1000, new RefreshListener());
     private final RestTemplate restTemplate;
-//    private static final String URL = "https://prik2go-backend.onrender.com/private/locations/%s";
-    private static final String URL = "http://localhost:8080/private/locations/%s";
+//    private static final String BASE_URL = "https://prik2go-backend.onrender.com/private/locations/%s";
+    private static final String BASE_URL = "http://localhost:8080/private/locations/%s";
 
     public ApiClient(RestTemplate restTemplate){
         this.restTemplate = restTemplate;
@@ -60,7 +59,7 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     @Override
     public ResponseEntity<List> getBranches() throws IllegalAccessException, ApplicatieException {
         try {
-            return restTemplate.exchange(String.format(URL, "get-branches"),
+            return restTemplate.exchange(String.format(BASE_URL, "get-branches"),
                     HttpMethod.POST,
                     getHttpRequest(),
                     List.class);
@@ -74,7 +73,7 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
 
     @Override
     public ResponseEntity<KlantenDTO> getCustomers(String location) throws IllegalAccessException, ApplicatieException {
-        return restTemplate.exchange(String.format(URL, "get-customers?location=" + location),
+        return restTemplate.exchange(String.format(BASE_URL, "get-customers?location=" + location),
                         HttpMethod.POST,
                         getHttpRequest(),
                         KlantenDTO.class);
@@ -83,7 +82,7 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     @Override
     public ResponseEntity<Boolean> getBranchStatus(String location) throws ApplicatieException, IllegalAccessException {
         try {
-            return restTemplate.exchange(String.format(URL, "get-status?location=" + location),
+            return restTemplate.exchange(String.format(BASE_URL, "get-status?location=" + location),
                     HttpMethod.POST,
                     getHttpRequest(),
                     Boolean.class);
@@ -99,7 +98,7 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
             log.warn("getHttpRequest called on EDT — may block UI");
         }
         try {
-            restTemplate.exchange(String.format(URL, "change-status?location=" + location),
+            restTemplate.exchange(String.format(BASE_URL, "change-status?location=" + location),
                     HttpMethod.PUT,
                     getHttpRequest(),
                     Void.class);

@@ -24,7 +24,8 @@ public class AuthService {
         AuthClient.linkGoogleAccount();
     }
 
-    public void loginGoogleAccount() throws ApplicatieException {
+    public boolean loginGoogleAccount() throws ApplicatieException {
         AuthClient.setLoginGoogle();
+        return AuthClient.userAuthenticated();
     }
 }

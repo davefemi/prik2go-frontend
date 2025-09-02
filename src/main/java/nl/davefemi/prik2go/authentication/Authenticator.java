@@ -88,7 +88,8 @@ public class Authenticator {
     }
 
     public static boolean loginWithGoogle() throws ApplicatieException {
-        authService.loginGoogleAccount();
-        return true;
+        if (authService.loginGoogleAccount()){
+            session =
+        };
     }
 }
