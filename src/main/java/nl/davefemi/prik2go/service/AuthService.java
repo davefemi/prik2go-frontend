@@ -19,4 +19,8 @@ public class AuthService {
     public SessionDTO changePassword(UserDTO user) throws ApplicatieException {
         return AuthClient.changePassword(user).getBody();
     }
+
+    public void linkGoogleAccount() throws ApplicatieException {
+        AuthClient.thirdPartyLogin();
+    }
 }

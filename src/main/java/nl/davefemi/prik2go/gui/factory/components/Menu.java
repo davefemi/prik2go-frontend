@@ -2,6 +2,8 @@ package nl.davefemi.prik2go.gui.factory.components;
 
 import nl.davefemi.prik2go.authentication.Authenticator;
 import nl.davefemi.prik2go.authentication.ChangeForm;
+import nl.davefemi.prik2go.client.AuthClient;
+import nl.davefemi.prik2go.exceptions.ApplicatieException;
 import nl.davefemi.prik2go.exceptions.BerichtDialoog;
 
 import javax.naming.LimitExceededException;
@@ -26,6 +28,7 @@ public class Menu extends JMenuBar {
             account.add(getLogin());
             account.add(getLogout());
             account.add(getChangePassword());
+            account.add(getLinkAccount());
         }
         return account;
     }
@@ -63,6 +66,18 @@ public class Menu extends JMenuBar {
             }
         });
         return changePassword;
+    }
+
+    private JMenuItem getLinkAccount(){
+        JMenuItem linkAccount = new JMenuItem("Link Google-Account");
+        linkAccount.addActionListener(e -> {
+            try {
+                Authenticator.linkGoogleAccount();
+            } catch (IllegalAccessException ex) {
+                BerichtDialoog.getErrorDialoog(null, ex.getMessage());
+            }
+        });
+        return linkAccount;
     }
 
 }

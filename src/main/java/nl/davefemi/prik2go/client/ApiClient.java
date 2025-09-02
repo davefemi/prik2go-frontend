@@ -23,8 +23,8 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     private static final Log log = LogFactory.getLog(ApiClient.class);
     private final Timer timer = new Timer(1000, new RefreshListener());
     private final RestTemplate restTemplate;
-    private static final String URL = "https://prik2go-backend.onrender.com/private/locations/%s";
-//    private static final String URL = "http://localhost:8080/private/locations/%s";
+//    private static final String URL = "https://prik2go-backend.onrender.com/private/locations/%s";
+    private static final String URL = "http://localhost:8080/private/locations/%s";
 
     public ApiClient(RestTemplate restTemplate){
         this.restTemplate = restTemplate;

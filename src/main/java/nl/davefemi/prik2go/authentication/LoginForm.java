@@ -16,6 +16,7 @@ public class LoginForm extends JPanel {
     private final JLabel PASSWORD = new JLabel("Password", JLabel.TRAILING);
     private JTextField emailField = new JTextField(20);
     private JPasswordField passwordField = new JPasswordField(20);
+    private JLabel googleField = new JLabel("Sign in with Google");
     private final LoginForm panel = this;
     private JOptionPane pane;
     private final String[] options = {"OK", "Cancel"};
@@ -46,6 +47,7 @@ public class LoginForm extends JPanel {
                 5, 5,
                 5, 5);
         this.panel.add(panel, BorderLayout.CENTER);
+        this.panel.add(googleField, BorderLayout.NORTH);
     }
 
     public UserDTO getUserLogin(UUID user) {

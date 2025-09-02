@@ -75,4 +75,15 @@ public class Authenticator {
             authService.changePassword(dto);
             return true;
     }
+
+    public static void linkGoogleAccount() throws IllegalAccessException {
+        if (!isSessionValid()){
+            validateSession();
+        }
+        try {
+            authService.linkGoogleAccount();
+        } catch (ApplicatieException e) {
+            BerichtDialoog.getErrorDialoog(null, e.getMessage());
+        }
+    }
 }
