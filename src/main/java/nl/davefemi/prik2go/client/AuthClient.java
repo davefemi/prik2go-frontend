@@ -22,8 +22,8 @@ import javax.swing.*;
 public class AuthClient {
     private static final Timer timer = new Timer(100, new RefreshListener());
     private static final RestTemplate restTemplate = new RestTemplate();
-    //        private static final String URL = "https://prik2go-backend.onrender.com/auth/%s";
-    private static final String BASE_URL = "http://localhost:8080/%s";
+    private static final String BASE_URL = "https://prik2go-backend.onrender.com/%s";
+//    private static final String BASE_URL = "http://localhost:8080/%s";
     private static final String LINK_GOOGLE = "private/oauth2/request/start";
     private static final String LOGIN_GOOGLE = "oauth2/request/start";
 
