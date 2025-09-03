@@ -79,7 +79,6 @@ public class Authenticator {
             if ((boolean) evt.getNewValue()) {
                 googleAuth.set(true);
                 form.closeDialog();
-                System.out.println("Gelukt");
             }
             });
         return form.getUserLogin(session != null ? session.getUser() : null);
@@ -114,5 +113,4 @@ public class Authenticator {
         }
         return false;
     }
-
 }
