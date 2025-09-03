@@ -10,12 +10,16 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
+import java.util.logging.Logger;
 
 import static java.awt.event.KeyEvent.VK_ENTER;
 
 public class LoginForm extends JPanel {
+    private static Logger log = Logger.getLogger(LoginForm.class.getName());
     private static final JLabel EMAIL = new JLabel("E-mail", JLabel.TRAILING);
     private final JLabel PASSWORD = new JLabel("Password", JLabel.TRAILING);
     private JTextField emailField = new JTextField(20);
@@ -24,6 +28,7 @@ public class LoginForm extends JPanel {
     private final LoginForm panel = this;
     private JOptionPane pane;
     private final String[] options = {"OK", "Cancel"};
+    private JDialog dialog;
 
     public LoginForm() {
         super();
@@ -32,6 +37,7 @@ public class LoginForm extends JPanel {
 
     private void buildPanel() {
         panel.setLayout(new GridLayout(2, 0));
+        panel.putClientProperty("googleAuth", false);
         getFields();
     }
 
@@ -60,7 +66,10 @@ public class LoginForm extends JPanel {
             @Override
             public void mousePressed(MouseEvent e) {
                 try {
-                    if (Authenticator.loginWithGoogle());
+                    if (Authenticator.loginWithGoogle()) {
+                        panel.firePropertyChange("googleAuth", false, true);
+                        log.info("Auth gelukt");
+                    }
                 } catch (ApplicatieException ex) {
                     BerichtDialoog.getErrorDialoog(panel, ex.getMessage());
                 }
@@ -93,7 +102,7 @@ public class LoginForm extends JPanel {
     private void getForm() {
         pane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE,
                 JOptionPane.DEFAULT_OPTION, null, options);
-        JDialog dialog = pane.createDialog("Login");
+        dialog = pane.createDialog("Login");
         dialog.setSize(600, 165);
         dialog.setVisible(true);
     }
@@ -112,6 +121,10 @@ public class LoginForm extends JPanel {
                 pane.setValue(options[0]);
             }
         };
+    }
+
+    public void closeDialog(){
+        dialog.dispose();
     }
 }
 

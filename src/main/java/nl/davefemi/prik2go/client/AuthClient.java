@@ -1,7 +1,6 @@
 package nl.davefemi.prik2go.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.SneakyThrows;
 import nl.davefemi.prik2go.authentication.Authenticator;
 import nl.davefemi.prik2go.dto.AuthResponseDTO;
 import nl.davefemi.prik2go.dto.SessionDTO;
@@ -13,17 +12,20 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.net.URI;
-
+import java.net.URISyntaxException;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import javax.swing.*;
 
 public class AuthClient {
+    private static final Timer timer = new Timer(100, new RefreshListener());
     private static final RestTemplate restTemplate = new RestTemplate();
     //        private static final String URL = "https://prik2go-backend.onrender.com/auth/%s";
     private static final String BASE_URL = "http://localhost:8080/%s";
     private static final String LINK_GOOGLE = "private/oauth2/request/start";
     private static final String LOGIN_GOOGLE = "oauth2/request/start";
-    private static AuthResponseDTO authResponseDTO;
 
     @Bean
     public ObjectMapper objectMapper() {
@@ -93,22 +95,28 @@ public class AuthClient {
         }
     }
 
-    public static void setLoginGoogle() throws ApplicatieException {
+    public static SessionDTO setLoginGoogle() throws ApplicatieException {
         try {
             RequestEntity<UserDTO> request = new RequestEntity(
                     HttpMethod.GET,
                     new URI(String.format(BASE_URL, LOGIN_GOOGLE)));
-            thirdPartyLogin(request);
-        } catch (Exception e) {
+            AuthResponseDTO authResponseDTO = thirdPartyLogin(request);
+            boolean res = userAuthenticated(authResponseDTO);
+            if (res) {
+                return getOauthSession(authResponseDTO).getBody();
+            } else {
+                throw new ApplicatieException("Oauth authentication failed");
+            }
+        } catch (URISyntaxException e) {
             throw new ApplicatieException(e.getMessage());
         }
     }
 
-    public static void thirdPartyLogin(RequestEntity<UserDTO> request) throws ApplicatieException {
-        SessionDTO sessionDTO = Authenticator.getSession();
+        public static AuthResponseDTO thirdPartyLogin(RequestEntity<UserDTO> request) throws ApplicatieException {
         try {
-            authResponseDTO = restTemplate.exchange(request, AuthResponseDTO.class).getBody();
+            AuthResponseDTO authResponseDTO = restTemplate.exchange(request, AuthResponseDTO.class).getBody();
             Desktop.getDesktop().browse(URI.create(authResponseDTO.getUrl()));
+            return authResponseDTO;
         } catch (HttpClientErrorException e) {
             throw new ApplicatieException("Unauthorized: login failed");
         } catch (RestClientException e) {
@@ -118,13 +126,37 @@ public class AuthClient {
         }
     }
 
-    public static ResponseEntity<SessionDTO> userAuthenticated() throws ApplicatieException {
+    public static boolean userAuthenticated(AuthResponseDTO response) throws ApplicatieException {
+        try {
+            int tries = 10;
+            while (tries-- > -0) {
+                RequestEntity<AuthResponseDTO> request = new RequestEntity(
+                        response,
+                        HttpMethod.POST,
+                        new URI(String.format(BASE_URL, "oauth2/request/polling")),
+                        AuthResponseDTO.class);
+                if (restTemplate.exchange(request, Boolean.class).getBody())
+                    return true;
+                Thread.sleep(2000);
+            }
+            return false;
+        } catch (HttpClientErrorException e) {
+            throw new ApplicatieException("Unauthorized: login failed");
+        } catch (RestClientException e) {
+            throw new ApplicatieException("Network is unreachable");
+        } catch (Exception e) {
+            throw new ApplicatieException(e.getCause().getMessage());
+        }
+    }
+
+    public static ResponseEntity<SessionDTO> getOauthSession(AuthResponseDTO authResponse) throws ApplicatieException {
         try {
             RequestEntity<AuthResponseDTO> request = new RequestEntity(
-                    authResponseDTO,
-                    HttpMethod.GET,
-                    new URI(String.format(BASE_URL, "/oauth2/request/get-session")),
+                    authResponse,
+                    HttpMethod.POST,
+                    new URI(String.format(BASE_URL, "oauth2/request/get-session")),
                     AuthResponseDTO.class);
+            System.out.println("Gelukt");
             return restTemplate.exchange(request, SessionDTO.class);
         } catch (HttpClientErrorException e) {
             throw new ApplicatieException("Unauthorized: login failed");
@@ -135,4 +167,11 @@ public class AuthClient {
         }
     }
 
+    private static class RefreshListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+
+        }
+    }
 }

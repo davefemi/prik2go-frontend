@@ -1,5 +1,6 @@
 package nl.davefemi.prik2go.authentication;
 
+import nl.davefemi.prik2go.dto.KlantenDTO;
 import nl.davefemi.prik2go.dto.SessionDTO;
 import nl.davefemi.prik2go.dto.UserDTO;
 import nl.davefemi.prik2go.exceptions.ApplicatieException;
@@ -7,8 +8,13 @@ import nl.davefemi.prik2go.exceptions.BerichtDialoog;
 import nl.davefemi.prik2go.service.AuthService;
 
 import javax.naming.LimitExceededException;
+import javax.swing.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.time.Instant;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 public class Authenticator {
@@ -16,6 +22,7 @@ public class Authenticator {
     private static final Logger log = Logger.getLogger(Authenticator.class.getName());
     private static volatile SessionDTO session;
     private static final int RETRIES = 5;
+    private static final AtomicBoolean googleAuth = new AtomicBoolean(false);
 
     private static synchronized boolean isSessionValid() {
         return session != null && session.getExpiresAt().isAfter(Instant.now().plusSeconds(30));
@@ -33,16 +40,18 @@ public class Authenticator {
             session = null;
             return handleLogin();
         } catch (CancellationException e) {
+            if (!isSessionValid())
             throw new CancellationException(e.getMessage());
         }
         catch (Exception e){
             throw new IllegalAccessException("Login failed: " + e.getMessage());
         }
+        return true;
     }
 
     private static boolean handleLogin() throws Exception {
         int attempts = RETRIES;
-        while (attempts-- > 0) {
+        while (!googleAuth.get() || attempts --> 0) {
             try {
                 UserDTO credentials = getUserCredentials();
                 if (credentials == null) throw new CancellationException("Login cancelled");
@@ -57,11 +66,22 @@ public class Authenticator {
                 BerichtDialoog.getErrorDialoog(null, e.getMessage());
             }
         }
+        if (googleAuth.get()){
+            return true;
+        }
         throw new LimitExceededException("Too many attempts");
     }
 
     private static UserDTO getUserCredentials() throws Exception {
+        googleAuth.set(false);
         LoginForm form = new LoginForm();
+        form.addPropertyChangeListener("googleAuth", evt -> {
+            if ((boolean) evt.getNewValue()) {
+                googleAuth.set(true);
+                form.closeDialog();
+                System.out.println("Gelukt");
+            }
+            });
         return form.getUserLogin(session != null ? session.getUser() : null);
     }
 
@@ -88,8 +108,11 @@ public class Authenticator {
     }
 
     public static boolean loginWithGoogle() throws ApplicatieException {
-        if (authService.loginGoogleAccount()){
-            session =
-        };
+        session = authService.loginGoogleAccount();
+        if (isSessionValid()){
+            return true;
+        }
+        return false;
     }
+
 }

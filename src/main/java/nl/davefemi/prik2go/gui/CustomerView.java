@@ -58,7 +58,6 @@ public class CustomerView extends JFrame implements ApiObserver {
                 loading.setVerticalAlignment(SwingConstants.CENTER);
                 loading.setHorizontalAlignment(SwingConstants.CENTER);
                 this.add(loading, BorderLayout.CENTER);
-                this.setVisible(true);
                 controller.getVestigingStatus(vestigingMap ->{
                         this.remove(loading);
                         this.setJMenuBar(builder.getMenu());

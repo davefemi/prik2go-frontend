@@ -24,8 +24,7 @@ public class AuthService {
         AuthClient.linkGoogleAccount();
     }
 
-    public boolean loginGoogleAccount() throws ApplicatieException {
-        AuthClient.setLoginGoogle();
-        return AuthClient.userAuthenticated();
+    public SessionDTO loginGoogleAccount() throws ApplicatieException {
+        return AuthClient.setLoginGoogle();
     }
 }
