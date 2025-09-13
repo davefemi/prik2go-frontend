@@ -71,8 +71,8 @@ public class Prik2GoApp {
                 SwingUtilities.invokeLater(() -> {
                         VisualizerView gui = visualizerView;
                         apiSubject.attach(gui);
-                        gui.setVisible(true);
                         gui.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+                        gui.setVisible(true);
                 });
                 }
                 catch (Exception e) {
@@ -91,8 +91,10 @@ public class Prik2GoApp {
                                         gui.setVisible(true);
                                         apiSubject.attach(gui);
                                         gui.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+                                        gui.bringToFront();;
                                 });
         }
+
 
 
 }

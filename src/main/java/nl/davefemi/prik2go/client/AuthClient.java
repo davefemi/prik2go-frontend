@@ -2,7 +2,7 @@ package nl.davefemi.prik2go.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.davefemi.prik2go.authentication.Authenticator;
-import nl.davefemi.prik2go.dto.AuthResponseDTO;
+import nl.davefemi.prik2go.dto.OAuthRequestDTO;
 import nl.davefemi.prik2go.dto.SessionDTO;
 import nl.davefemi.prik2go.dto.UserDTO;
 import nl.davefemi.prik2go.exceptions.ApplicatieException;
@@ -12,15 +12,11 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.net.URI;
 import java.net.URISyntaxException;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import javax.swing.*;
 
 public class AuthClient {
-    private static final Timer timer = new Timer(100, new RefreshListener());
     private static final RestTemplate restTemplate = new RestTemplate();
     private static final String BASE_URL = "https://prik2go-backend.onrender.com/%s";
 //    private static final String BASE_URL = "http://localhost:8080/%s";
@@ -52,12 +48,12 @@ public class AuthClient {
 
     public static ResponseEntity<SessionDTO> loginUser(UserDTO user) throws ApplicatieException {
         try {
-            RequestEntity<UserDTO> request = new RequestEntity(
+            RequestEntity<UserDTO> httpRequest = new RequestEntity(
                     user,
                     HttpMethod.POST,
                     new URI(String.format(BASE_URL, "auth/login")),
                     UserDTO.class);
-            return restTemplate.exchange(request, SessionDTO.class);
+            return restTemplate.exchange(httpRequest, SessionDTO.class);
         } catch (HttpClientErrorException e) {
             throw new ApplicatieException("Unauthorized: login failed");
         } catch (RestClientException e) {
@@ -69,13 +65,13 @@ public class AuthClient {
 
     public static ResponseEntity<SessionDTO> changePassword(UserDTO user) throws ApplicatieException {
         try {
-            RequestEntity<UserDTO> request = new RequestEntity(
+            RequestEntity<UserDTO> httpRequest = new RequestEntity(
                     user,
                     getHttpRequest().getHeaders(),
                     HttpMethod.POST,
                     new URI(String.format(BASE_URL, "auth/change-password")),
                     UserDTO.class);
-            return restTemplate.exchange(request, SessionDTO.class);
+            return restTemplate.exchange(httpRequest, SessionDTO.class);
         } catch (HttpClientErrorException e) {
             throw new ApplicatieException(e.getResponseBodyAsString().isBlank() ? "Authentication failed" : e.getResponseBodyAsString());
         } catch (Exception e) {
@@ -85,11 +81,11 @@ public class AuthClient {
 
     public static void linkGoogleAccount() throws ApplicatieException {
         try {
-            RequestEntity<UserDTO> request = new RequestEntity(
+            RequestEntity<UserDTO> httpRequest = new RequestEntity(
                     getOauth2HttpRequest().getHeaders(),
                     HttpMethod.GET,
                     new URI(String.format(BASE_URL, LINK_GOOGLE)));
-            thirdPartyLogin(request);
+            oAuth2Login(httpRequest);
         } catch (Exception e) {
             throw new ApplicatieException(e.getMessage());
         }
@@ -97,13 +93,12 @@ public class AuthClient {
 
     public static SessionDTO setLoginGoogle() throws ApplicatieException {
         try {
-            RequestEntity<UserDTO> request = new RequestEntity(
+            RequestEntity<UserDTO> httpRequest = new RequestEntity(
                     HttpMethod.GET,
                     new URI(String.format(BASE_URL, LOGIN_GOOGLE)));
-            AuthResponseDTO authResponseDTO = thirdPartyLogin(request);
-            boolean res = userAuthenticated(authResponseDTO);
-            if (res) {
-                return getOauthSession(authResponseDTO).getBody();
+            OAuthRequestDTO OAuthRequestDTO = oAuth2Login(httpRequest);
+            if (isOAuthUserAuthenticated(OAuthRequestDTO)) {
+                return getOauthSession(OAuthRequestDTO).getBody();
             } else {
                 throw new ApplicatieException("Oauth authentication failed");
             }
@@ -112,11 +107,11 @@ public class AuthClient {
         }
     }
 
-        public static AuthResponseDTO thirdPartyLogin(RequestEntity<UserDTO> request) throws ApplicatieException {
+        private static OAuthRequestDTO oAuth2Login(RequestEntity<UserDTO> httpRequest) throws ApplicatieException {
         try {
-            AuthResponseDTO authResponseDTO = restTemplate.exchange(request, AuthResponseDTO.class).getBody();
-            Desktop.getDesktop().browse(URI.create(authResponseDTO.getUrl()));
-            return authResponseDTO;
+            OAuthRequestDTO OAuthRequestDTO = restTemplate.exchange(httpRequest, OAuthRequestDTO.class).getBody();
+            Desktop.getDesktop().browse(URI.create(OAuthRequestDTO.getUrl()));
+            return OAuthRequestDTO;
         } catch (HttpClientErrorException e) {
             throw new ApplicatieException("Unauthorized: login failed");
         } catch (RestClientException e) {
@@ -126,16 +121,16 @@ public class AuthClient {
         }
     }
 
-    public static boolean userAuthenticated(AuthResponseDTO response) throws ApplicatieException {
+    private static boolean isOAuthUserAuthenticated(OAuthRequestDTO oAuthRequest) throws ApplicatieException {
         try {
             int tries = 10;
             while (tries-- > -0) {
-                RequestEntity<AuthResponseDTO> request = new RequestEntity(
-                        response,
+                RequestEntity<OAuthRequestDTO> httpRequest = new RequestEntity(
+                        oAuthRequest,
                         HttpMethod.POST,
                         new URI(String.format(BASE_URL, "oauth2/request/polling")),
-                        AuthResponseDTO.class);
-                if (restTemplate.exchange(request, Boolean.class).getBody())
+                        OAuthRequestDTO.class);
+                if (restTemplate.exchange(httpRequest, Boolean.class).getBody())
                     return true;
                 Thread.sleep(2000);
             }
@@ -149,29 +144,20 @@ public class AuthClient {
         }
     }
 
-    public static ResponseEntity<SessionDTO> getOauthSession(AuthResponseDTO authResponse) throws ApplicatieException {
+    private static ResponseEntity<SessionDTO> getOauthSession(OAuthRequestDTO oAuthRequest) throws ApplicatieException {
         try {
-            RequestEntity<AuthResponseDTO> request = new RequestEntity(
-                    authResponse,
+            RequestEntity<OAuthRequestDTO> httpRequest = new RequestEntity(
+                    oAuthRequest,
                     HttpMethod.POST,
                     new URI(String.format(BASE_URL, "oauth2/request/get-session")),
-                    AuthResponseDTO.class);
-            System.out.println("Gelukt");
-            return restTemplate.exchange(request, SessionDTO.class);
+                    OAuthRequestDTO.class);
+            return restTemplate.exchange(httpRequest, SessionDTO.class);
         } catch (HttpClientErrorException e) {
             throw new ApplicatieException("Unauthorized: login failed");
         } catch (RestClientException e) {
             throw new ApplicatieException("Network is unreachable");
         } catch (Exception e) {
             throw new ApplicatieException(e.getCause().getMessage());
-        }
-    }
-
-    private static class RefreshListener implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-
         }
     }
 }

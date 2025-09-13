@@ -6,7 +6,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Data
-public class AuthResponseDTO {
+public class OAuthRequestDTO {
     private UUID requestCode;
     private String secret;
     private Long pollingInterval;

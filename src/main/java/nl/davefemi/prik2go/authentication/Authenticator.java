@@ -38,6 +38,7 @@ public class Authenticator {
         }
         try {
             session = null;
+            googleAuth.set(false);
             return handleLogin();
         } catch (CancellationException e) {
             if (!isSessionValid())
@@ -51,9 +52,11 @@ public class Authenticator {
 
     private static boolean handleLogin() throws Exception {
         int attempts = RETRIES;
-        while (!googleAuth.get() || attempts --> 0) {
+        LoginForm form = null;
+        while (!googleAuth.get() && attempts --> 0) {
             try {
-                UserDTO credentials = getUserCredentials();
+                form = new LoginForm();
+                UserDTO credentials = getUserCredentials(form);
                 if (credentials == null) throw new CancellationException("Login cancelled");
                 session = authService.loginUser(credentials);
                 log.info("Authentication successful");
@@ -67,16 +70,17 @@ public class Authenticator {
             }
         }
         if (googleAuth.get()){
+            if(form != null)
+                form.closeDialog();
             return true;
         }
         throw new LimitExceededException("Too many attempts");
     }
 
-    private static UserDTO getUserCredentials() throws Exception {
-        googleAuth.set(false);
-        LoginForm form = new LoginForm();
+    private static UserDTO getUserCredentials(LoginForm form) throws Exception {
         form.addPropertyChangeListener("googleAuth", evt -> {
             if ((boolean) evt.getNewValue()) {
+                log.info("Gelukt");
                 googleAuth.set(true);
                 form.closeDialog();
             }

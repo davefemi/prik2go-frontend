@@ -81,6 +81,7 @@ public class CustomerViewController {
                 SwingWorker<List<Future<Boolean>>, Void> worker = new SwingWorker<>() {
                         @Override
                         protected List<Future<Boolean>> doInBackground() {
+
                                 ExecutorService pool = Executors.newFixedThreadPool(Math.min(12, vestigingen.size()));
                                 List<Future<Boolean>> futures = new ArrayList<>();
                                 for (String v : vestigingen) {

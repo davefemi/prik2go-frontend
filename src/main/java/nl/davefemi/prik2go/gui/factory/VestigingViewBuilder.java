@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.swing.*;
 
 import nl.davefemi.prik2go.gui.factory.components.ActieKnop;
+import nl.davefemi.prik2go.gui.factory.components.LoadingPanel;
 import nl.davefemi.prik2go.gui.factory.components.Menu;
 import nl.davefemi.prik2go.gui.factory.components.VestigingKnop;
 
@@ -24,6 +25,7 @@ public class VestigingViewBuilder {
         private JPanel actiePaneel = null;
         private JLabel totaalKlantenLabel = null;
         private boolean vestigingError = false;
+        private JDialog loading;
         private final ActionListener vestigingKnopListener;
         private final ActionListener actieKnopListener;
         private final ActionListener visualizerKnopListener;

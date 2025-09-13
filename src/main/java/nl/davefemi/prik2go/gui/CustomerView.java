@@ -3,13 +3,19 @@ package nl.davefemi.prik2go.gui;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 import javax.swing.*;
+import javax.swing.plaf.ProgressBarUI;
+
 import nl.davefemi.prik2go.Prik2GoApp;
 import nl.davefemi.prik2go.controller.CustomerViewController;
 import nl.davefemi.prik2go.exceptions.BerichtDialoog;
 import nl.davefemi.prik2go.exceptions.VestigingException;
+import nl.davefemi.prik2go.gui.factory.SwingBringToFront;
 import nl.davefemi.prik2go.gui.factory.VestigingViewBuilder;
 import nl.davefemi.prik2go.observer.ApiObserver;
 import nl.davefemi.prik2go.observer.ApiSubject;
@@ -28,6 +34,7 @@ public class CustomerView extends JFrame implements ApiObserver {
         private static final String TITEL = "Vestigingen";
         private List<String> locaties = null;
         private String geselecteerdeLocatie = null;
+        private final CustomerView view = this;
 
         /**
          * Constructor waarin de controller wordt geïnitialiseerd en vestigingsklassen worden
@@ -36,6 +43,7 @@ public class CustomerView extends JFrame implements ApiObserver {
          */
         public CustomerView(CustomerViewController controller) {
                 super();
+                this.setFocusable(true);
                 this.controller = controller;
                 this.builder = new VestigingViewBuilder(new VestigingKnopListener(),
                                 new ActieKnopListener(), 
@@ -54,19 +62,29 @@ public class CustomerView extends JFrame implements ApiObserver {
                 this.setSize(FRAME_SIZE);
                 this.setLocation(FRAME_LOC);
                 this.setLayout(new BorderLayout());
-                JLabel loading = new JLabel("Loading...");
-                loading.setVerticalAlignment(SwingConstants.CENTER);
-                loading.setHorizontalAlignment(SwingConstants.CENTER);
+                JPanel loading = new JPanel();
+                JProgressBar bar = new JProgressBar();
+                bar.setIndeterminate(true);
+                loading.setLayout(new GridBagLayout());
+                loading.add(bar);
                 this.add(loading, BorderLayout.CENTER);
                 controller.getVestigingStatus(vestigingMap ->{
-                        this.remove(loading);
-                        this.setJMenuBar(builder.getMenu());
-                        this.add(builder.getVestigingPaneel(vestigingMap), BorderLayout.WEST);
-                        this.add(builder.getKlantenPaneel(), BorderLayout.CENTER);
-                        this.revalidate();
-                        this.repaint();
-                        logger.info("App initialized");
+                        SwingUtilities.invokeLater(()->{
+                                view.add(builder.getVestigingPaneel(vestigingMap), BorderLayout.WEST);
+                                view.setJMenuBar(builder.getMenu());
+                                view.add(builder.getKlantenPaneel(), BorderLayout.CENTER);
+                                view.remove(loading);
+                                view.revalidate();
+                                view.repaint();
+                                logger.info("App initialized");
+                        });
+
                 }, exception->{builder.setVestigingError(true);});
+
+        }
+
+        public void bringToFront() {
+                SwingBringToFront.bringWindowToFront(this);
         }
          
         private void setVestigingLocaties() {
@@ -166,4 +184,6 @@ public class CustomerView extends JFrame implements ApiObserver {
                         Prik2GoApp.startVisualisatie();       
                 }     
         }
+
 }
+
