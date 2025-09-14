@@ -1,7 +1,7 @@
 package nl.davefemi.prik2go.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.davefemi.prik2go.authentication.Authenticator;
+import nl.davefemi.prik2go.controller.AuthController;
 import nl.davefemi.prik2go.dto.OAuthRequestDTO;
 import nl.davefemi.prik2go.dto.SessionDTO;
 import nl.davefemi.prik2go.dto.UserDTO;
@@ -31,18 +31,18 @@ public class AuthClient {
     }
 
     private static synchronized HttpEntity<String> getHttpRequest() throws IllegalAccessException, ApplicatieException {
-        SessionDTO session = Authenticator.getSession();
+        SessionDTO session = AuthController.getSession();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(session.getToken());
-        return new HttpEntity<>(Authenticator.getSession().getUser().toString(), headers);
+        return new HttpEntity<>(AuthController.getSession().getUser().toString(), headers);
     }
 
     private static synchronized HttpEntity<String> getOauth2HttpRequest() throws IllegalAccessException, ApplicatieException {
-        SessionDTO session = Authenticator.getSession();
+        SessionDTO session = AuthController.getSession();
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(session.getToken());
-        return new HttpEntity<>(Authenticator.getSession().getUser().toString(), headers);
+        return new HttpEntity<>(AuthController.getSession().getUser().toString(), headers);
     }
 
 
@@ -79,16 +79,20 @@ public class AuthClient {
         }
     }
 
-    public static void linkGoogleAccount() throws ApplicatieException {
+    public static boolean linkGoogleAccount() throws ApplicatieException {
         try {
             RequestEntity<UserDTO> httpRequest = new RequestEntity(
                     getOauth2HttpRequest().getHeaders(),
                     HttpMethod.GET,
                     new URI(String.format(BASE_URL, LINK_GOOGLE)));
-            oAuth2Login(httpRequest);
+            OAuthRequestDTO oAuthRequestDTO = oAuth2Login(httpRequest);
+            if (isOAuthUserAuthenticated(oAuthRequestDTO)){
+                return true;
+            }
         } catch (Exception e) {
             throw new ApplicatieException(e.getMessage());
         }
+        return false;
     }
 
     public static SessionDTO setLoginGoogle() throws ApplicatieException {
@@ -96,9 +100,9 @@ public class AuthClient {
             RequestEntity<UserDTO> httpRequest = new RequestEntity(
                     HttpMethod.GET,
                     new URI(String.format(BASE_URL, LOGIN_GOOGLE)));
-            OAuthRequestDTO OAuthRequestDTO = oAuth2Login(httpRequest);
-            if (isOAuthUserAuthenticated(OAuthRequestDTO)) {
-                return getOauthSession(OAuthRequestDTO).getBody();
+            OAuthRequestDTO oAuthRequestDTO = oAuth2Login(httpRequest);
+            if (isOAuthUserAuthenticated(oAuthRequestDTO)) {
+                return getOauthSession(oAuthRequestDTO).getBody();
             } else {
                 throw new ApplicatieException("Oauth authentication failed");
             }

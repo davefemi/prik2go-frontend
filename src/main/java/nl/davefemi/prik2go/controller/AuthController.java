@@ -1,31 +1,29 @@
-package nl.davefemi.prik2go.authentication;
+package nl.davefemi.prik2go.controller;
 
-import nl.davefemi.prik2go.dto.KlantenDTO;
+import nl.davefemi.prik2go.gui.factory.components.authentication.ChangeForm;
+import nl.davefemi.prik2go.gui.factory.components.authentication.LoginForm;
 import nl.davefemi.prik2go.dto.SessionDTO;
 import nl.davefemi.prik2go.dto.UserDTO;
 import nl.davefemi.prik2go.exceptions.ApplicatieException;
-import nl.davefemi.prik2go.exceptions.BerichtDialoog;
+import nl.davefemi.prik2go.gui.factory.components.util.ActiveWindow;
+import nl.davefemi.prik2go.gui.factory.components.util.BerichtDialoog;
 import nl.davefemi.prik2go.service.AuthService;
 
 import javax.naming.LimitExceededException;
-import javax.swing.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.time.Instant;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 import java.util.logging.Logger;
 
-public class Authenticator {
+public class AuthController {
     private static final AuthService authService = new AuthService();
-    private static final Logger log = Logger.getLogger(Authenticator.class.getName());
+    private static final Logger log = Logger.getLogger(AuthController.class.getName());
     private static volatile SessionDTO session;
     private static final int RETRIES = 5;
     private static final AtomicBoolean googleAuth = new AtomicBoolean(false);
 
     private static synchronized boolean isSessionValid() {
-        return session != null && session.getExpiresAt().isAfter(Instant.now().plusSeconds(30));
+        return session != null && session.getExpiresAt().isAfter(Instant.now().plusSeconds(280));
     }
 
     public static synchronized SessionDTO getSession() {
@@ -83,6 +81,7 @@ public class Authenticator {
                 log.info("Gelukt");
                 googleAuth.set(true);
                 form.closeDialog();
+                ActiveWindow.bringToFront();
             }
             });
         return form.getUserLogin(session != null ? session.getUser() : null);
@@ -99,14 +98,14 @@ public class Authenticator {
             return true;
     }
 
-    public static void linkGoogleAccount() throws IllegalAccessException {
+    public static boolean linkGoogleAccount() throws IllegalAccessException, ApplicatieException {
         if (!isSessionValid()){
             validateSession();
         }
         try {
-            authService.linkGoogleAccount();
+            return authService.linkGoogleAccount();
         } catch (ApplicatieException e) {
-            BerichtDialoog.getErrorDialoog(null, e.getMessage());
+            throw new ApplicatieException("Failed to Authenticate");
         }
     }
 

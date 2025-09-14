@@ -10,7 +10,8 @@ import javax.swing.*;
 
 import nl.davefemi.prik2go.controller.VisualizerControllerInterface;
 import nl.davefemi.prik2go.exceptions.ApplicatieException;
-import nl.davefemi.prik2go.exceptions.BerichtDialoog;
+import nl.davefemi.prik2go.gui.factory.components.util.ActiveWindow;
+import nl.davefemi.prik2go.gui.factory.components.util.BerichtDialoog;
 import nl.davefemi.prik2go.exceptions.VestigingException;
 import nl.davefemi.prik2go.gui.factory.components.Bar;
 import nl.davefemi.prik2go.observer.ApiObserver;
@@ -184,6 +185,7 @@ public class VisualizerView extends JFrame implements ApiObserver {
                  */
                 public void mousePressed(MouseEvent e) {
                         Bar bar = (Bar) e.getSource();
+                        ActiveWindow.setActiveComponent(pane);
                         controller.barClicked(bar.getName(), ex ->{
                                 if (ex instanceof VestigingException){
                                         BerichtDialoog.getInfoDialoog(getContentPane(), ex.getMessage());

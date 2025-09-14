@@ -1,6 +1,6 @@
 package nl.davefemi.prik2go.client;
 
-import nl.davefemi.prik2go.authentication.Authenticator;
+import nl.davefemi.prik2go.controller.AuthController;
 import nl.davefemi.prik2go.dto.KlantenDTO;
 import nl.davefemi.prik2go.dto.SessionDTO;
 import nl.davefemi.prik2go.exceptions.ApplicatieException;
@@ -44,12 +44,12 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
 
     private synchronized HttpEntity<String> getHttpRequest() throws IllegalAccessException {
         try {
-            Authenticator.validateSession();
-            SessionDTO session = Authenticator.getSession();
+            AuthController.validateSession();
+            SessionDTO session = AuthController.getSession();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("Authorization", "Bearer " + session.getToken());
-            return new HttpEntity<>(Authenticator.getSession().getUser().toString(), headers);
+            return new HttpEntity<>(AuthController.getSession().getUser().toString(), headers);
         }
         catch (Exception e){
             throw new IllegalAccessException("No authorisation");

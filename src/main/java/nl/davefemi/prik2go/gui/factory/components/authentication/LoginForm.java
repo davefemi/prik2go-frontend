@@ -1,20 +1,17 @@
-package nl.davefemi.prik2go.authentication;
+package nl.davefemi.prik2go.gui.factory.components.authentication;
 
+import nl.davefemi.prik2go.controller.AuthController;
 import nl.davefemi.prik2go.dto.UserDTO;
 import nl.davefemi.prik2go.exceptions.ApplicatieException;
-import nl.davefemi.prik2go.exceptions.BerichtDialoog;
-import nl.davefemi.prik2go.gui.factory.SwingBringToFront;
-import nl.davefemi.prik2go.gui.factory.components.LoadingPanel;
-import nl.davefemi.prik2go.gui.factory.components.SpringUtilities;
+import nl.davefemi.prik2go.gui.factory.components.util.BerichtDialoog;
+import nl.davefemi.prik2go.gui.factory.components.util.SwingBringToFront;
+import nl.davefemi.prik2go.gui.factory.components.util.SpringUtilities;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.logging.Logger;
@@ -69,7 +66,7 @@ public class LoginForm extends JPanel {
             @Override
             public void mousePressed(MouseEvent e) {
                 try {
-                    if (Authenticator.loginWithGoogle()) {
+                    if (AuthController.loginWithGoogle()) {
                         panel.firePropertyChange("googleAuth", false, true);
                         log.info("Auth gelukt");
                     }

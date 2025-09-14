@@ -3,20 +3,17 @@ package nl.davefemi.prik2go.gui;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 import javax.swing.*;
-import javax.swing.plaf.ProgressBarUI;
 
 import nl.davefemi.prik2go.Prik2GoApp;
 import nl.davefemi.prik2go.controller.CustomerViewController;
-import nl.davefemi.prik2go.exceptions.BerichtDialoog;
+import nl.davefemi.prik2go.gui.factory.components.util.ActiveWindow;
+import nl.davefemi.prik2go.gui.factory.components.util.BerichtDialoog;
 import nl.davefemi.prik2go.exceptions.VestigingException;
-import nl.davefemi.prik2go.gui.factory.SwingBringToFront;
-import nl.davefemi.prik2go.gui.factory.VestigingViewBuilder;
+import nl.davefemi.prik2go.gui.factory.components.util.SwingBringToFront;
+import nl.davefemi.prik2go.gui.factory.CustomerViewBuilder;
 import nl.davefemi.prik2go.observer.ApiObserver;
 import nl.davefemi.prik2go.observer.ApiSubject;
 
@@ -28,7 +25,7 @@ public class CustomerView extends JFrame implements ApiObserver {
         private static final long serialVersionUID = 1L;
         private static final Logger logger = Logger.getLogger(CustomerView.class.getName());
         private final CustomerViewController controller;
-        private final VestigingViewBuilder builder;
+        private final CustomerViewBuilder builder;
         private static final Dimension FRAME_SIZE = new Dimension (520, 570);
         private static final Point FRAME_LOC = new Point (100,100);
         private static final String TITEL = "Vestigingen";
@@ -45,7 +42,7 @@ public class CustomerView extends JFrame implements ApiObserver {
                 super();
                 this.setFocusable(true);
                 this.controller = controller;
-                this.builder = new VestigingViewBuilder(new VestigingKnopListener(),
+                this.builder = new CustomerViewBuilder(new VestigingKnopListener(),
                                 new ActieKnopListener(), 
                                 new VisualizerKnopListener());
                 setVestigingLocaties();
@@ -58,6 +55,7 @@ public class CustomerView extends JFrame implements ApiObserver {
          * wordt verder geïnitialiseerd.
          */
         private void initialize() {
+                this.getRootPane().putClientProperty("cardName", "CustomerView");
                 this.setTitle(TITEL);
                 this.setSize(FRAME_SIZE);
                 this.setLocation(FRAME_LOC);
@@ -144,6 +142,7 @@ public class CustomerView extends JFrame implements ApiObserver {
                  */
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                        ActiveWindow.setActiveComponent(view);
                         updateDisplay((String) ((JButton) e.getSource()).getClientProperty("vestiging"), false);
                 }
         }
@@ -159,6 +158,7 @@ public class CustomerView extends JFrame implements ApiObserver {
                  */
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                        ActiveWindow.setActiveComponent(view);
                                 controller.veranderVestigingStatus(geselecteerdeLocatie, ex ->{
                                         if (ex instanceof VestigingException){
                                                 BerichtDialoog.getInfoDialoog(getContentPane(), ex.getLocalizedMessage());

@@ -1,10 +1,10 @@
 package nl.davefemi.prik2go;
 
-import nl.davefemi.prik2go.authentication.Authenticator;
+import nl.davefemi.prik2go.controller.AuthController;
 import nl.davefemi.prik2go.client.ApiClient;
 import nl.davefemi.prik2go.controller.VisualizerController;
 import nl.davefemi.prik2go.exceptions.ApplicatieException;
-import nl.davefemi.prik2go.exceptions.BerichtDialoog;
+import nl.davefemi.prik2go.gui.factory.components.util.BerichtDialoog;
 import nl.davefemi.prik2go.gui.CustomerView;
 import nl.davefemi.prik2go.gui.VisualizerView;
 import nl.davefemi.prik2go.controller.CustomerViewController;
@@ -41,7 +41,7 @@ public class Prik2GoApp {
                 service = new ApiService((ApiClient) apiSubject);
                 try {
                         UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-                        boolean result = Authenticator.validateSession();
+                        boolean result = AuthController.validateSession();
 
                         if (!result){
                                 System.exit(0);

@@ -20,8 +20,8 @@ public class AuthService {
         return AuthClient.changePassword(user).getBody();
     }
 
-    public void linkGoogleAccount() throws ApplicatieException {
-        AuthClient.linkGoogleAccount();
+    public boolean linkGoogleAccount() throws ApplicatieException {
+        return AuthClient.linkGoogleAccount();
     }
 
     public SessionDTO loginGoogleAccount() throws ApplicatieException {

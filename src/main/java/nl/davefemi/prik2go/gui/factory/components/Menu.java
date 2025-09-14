@@ -1,12 +1,11 @@
 package nl.davefemi.prik2go.gui.factory.components;
 
-import nl.davefemi.prik2go.authentication.Authenticator;
-import nl.davefemi.prik2go.authentication.ChangeForm;
-import nl.davefemi.prik2go.client.AuthClient;
-import nl.davefemi.prik2go.exceptions.ApplicatieException;
-import nl.davefemi.prik2go.exceptions.BerichtDialoog;
+import nl.davefemi.prik2go.controller.AuthController;
+import nl.davefemi.prik2go.gui.factory.components.authentication.ChangeForm;
+import nl.davefemi.prik2go.gui.factory.components.util.BerichtDialoog;
+import nl.davefemi.prik2go.gui.factory.components.util.SpringUtilities;
+import nl.davefemi.prik2go.gui.factory.components.util.SwingBringToFront;
 
-import javax.naming.LimitExceededException;
 import javax.swing.*;
 import java.util.concurrent.CancellationException;
 
@@ -37,10 +36,15 @@ public class Menu extends JMenuBar {
         JMenuItem login = new JMenuItem("Login");
         login.addActionListener(e -> {
             try {
-                Authenticator.validateSession();
+                if (AuthController.validateSession())
+                {
+                    SwingBringToFront.bringPanelToFront(this);
+                }
             } catch (Exception ex) {
-                if (!(ex instanceof CancellationException))
-                BerichtDialoog.getErrorDialoog(null, ex.getMessage());
+                if (!(ex instanceof CancellationException)) {
+                    SwingBringToFront.bringPanelToFront(this);
+                    BerichtDialoog.getErrorDialoog(getParent(), ex.getMessage());
+                }
             }
         });
         return login;
@@ -58,11 +62,13 @@ public class Menu extends JMenuBar {
         changePassword.addActionListener(e ->{
             ChangeForm form = new ChangeForm();
             try {
-                if (Authenticator.changePassword())
+                if (AuthController.changePassword()) {
                     BerichtDialoog.getInfoDialoog(null, "Password successfully changed");
+                }
             } catch (Exception ex) {
-                if (!(ex instanceof CancellationException))
-                BerichtDialoog.getErrorDialoog(null, ex.getMessage());
+                if (!(ex instanceof CancellationException)) {
+                    BerichtDialoog.getErrorDialoog(null, ex.getMessage());
+                }
             }
         });
         return changePassword;
@@ -72,9 +78,12 @@ public class Menu extends JMenuBar {
         JMenuItem linkAccount = new JMenuItem("Link Google-Account");
         linkAccount.addActionListener(e -> {
             try {
-                Authenticator.linkGoogleAccount();
-            } catch (IllegalAccessException ex) {
-                BerichtDialoog.getErrorDialoog(null, ex.getMessage());
+                if (AuthController.linkGoogleAccount()){
+                    SwingBringToFront.bringPanelToFront(this);
+                }
+            } catch (Exception ex) {
+                SwingBringToFront.bringPanelToFront(this);
+                BerichtDialoog.getErrorDialoog(getParent(), ex.getMessage());
             }
         });
         return linkAccount;

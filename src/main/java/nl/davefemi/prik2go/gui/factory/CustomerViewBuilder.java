@@ -7,7 +7,6 @@ import java.util.Map;
 import javax.swing.*;
 
 import nl.davefemi.prik2go.gui.factory.components.ActieKnop;
-import nl.davefemi.prik2go.gui.factory.components.LoadingPanel;
 import nl.davefemi.prik2go.gui.factory.components.Menu;
 import nl.davefemi.prik2go.gui.factory.components.VestigingKnop;
 
@@ -15,7 +14,7 @@ import nl.davefemi.prik2go.gui.factory.components.VestigingKnop;
  * Deze klasse is verantwoordelijk voor het bouwen en beheren van de elementen
  * van de VestigingView.
  */
-public class VestigingViewBuilder {
+public class CustomerViewBuilder {
         private JMenuBar menuBar = null;
         private JPanel vestigingPaneel = null;
         private ActieKnop statusWisselKnop = null;
@@ -40,9 +39,9 @@ public class VestigingViewBuilder {
          * @param actieKnopListener
          * @param visualizerKnopListener
          */
-        public VestigingViewBuilder(ActionListener vestigingKnopListener, 
-                        ActionListener actieKnopListener, 
-                        ActionListener visualizerKnopListener) {
+        public CustomerViewBuilder(ActionListener vestigingKnopListener,
+                                   ActionListener actieKnopListener,
+                                   ActionListener visualizerKnopListener) {
                 this.vestigingKnopListener = vestigingKnopListener;
                 this.actieKnopListener = actieKnopListener;
                 this.visualizerKnopListener = visualizerKnopListener;

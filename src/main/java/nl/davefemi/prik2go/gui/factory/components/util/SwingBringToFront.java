@@ -1,4 +1,4 @@
-package nl.davefemi.prik2go.gui.factory;
+package nl.davefemi.prik2go.gui.factory.components.util;
 
 import javax.swing.*;
 import java.awt.*;
