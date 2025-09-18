@@ -1,16 +1,21 @@
 package nl.davefemi.prik2go.gui.factory.components;
 
 import nl.davefemi.prik2go.controller.AuthController;
+import nl.davefemi.prik2go.exceptions.ApplicatieException;
 import nl.davefemi.prik2go.gui.factory.components.authentication.ChangeForm;
 import nl.davefemi.prik2go.gui.factory.components.util.BerichtDialoog;
+import nl.davefemi.prik2go.gui.factory.components.util.LoadingPanel;
 import nl.davefemi.prik2go.gui.factory.components.util.SpringUtilities;
 import nl.davefemi.prik2go.gui.factory.components.util.SwingBringToFront;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 
 public class Menu extends JMenuBar {
     private JMenu account = null;
+    private Menu menu = this;
 
     public Menu(){
         super();
@@ -77,14 +82,42 @@ public class Menu extends JMenuBar {
     private JMenuItem getLinkAccount(){
         JMenuItem linkAccount = new JMenuItem("Link Google-Account");
         linkAccount.addActionListener(e -> {
-            try {
-                if (AuthController.linkGoogleAccount()){
-                    SwingBringToFront.bringPanelToFront(this);
+            LoadingPanel loading = new LoadingPanel(SwingUtilities.getWindowAncestor(menu));
+            SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
+                @Override
+                protected Boolean doInBackground() throws Exception {
+                    try {
+                        if (AuthController.loginWithGoogle()) {
+                            return true;
+                        }
+                    } catch (ApplicatieException ex) {
+                        SwingBringToFront.bringPanelToFront(menu);
+                        loading.setVisible(false);
+                        BerichtDialoog.getErrorDialoog(SwingUtilities.getWindowAncestor(menu), ex.getMessage());
+                    }
+                    return false;
                 }
-            } catch (Exception ex) {
-                SwingBringToFront.bringPanelToFront(this);
-                BerichtDialoog.getErrorDialoog(getParent(), ex.getMessage());
-            }
+
+                @Override
+                public void done(){
+                    try {
+                        if (get()){
+                            SwingBringToFront.bringPanelToFront(menu);
+                            loading.setVisible(false);
+                        }
+                    } catch (InterruptedException ex) {
+                        loading.setVisible(false);
+                        SwingBringToFront.bringPanelToFront(menu);
+                        throw new RuntimeException(ex);
+                    } catch (ExecutionException ex) {
+                        loading.setVisible(false);
+                        SwingBringToFront.bringPanelToFront(menu);
+                        BerichtDialoog.getErrorDialoog(SwingUtilities.getWindowAncestor(menu), ex.getMessage());
+                    }
+                }
+            };
+            worker.execute();
+            loading.setVisible(true);
         });
         return linkAccount;
     }

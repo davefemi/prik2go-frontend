@@ -16,6 +16,23 @@
     </properties>
 
     <dependencies>
+        <!-- JavaFX Controls and WebView -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>21.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-web</artifactId>
+            <version>21.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-swing</artifactId>
+            <version>21.0.2</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
@@ -75,6 +92,14 @@
                         </path>
                         <!-- add other processors here only if you use them -->
                     </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>0.0.8</version> <!-- or the latest -->
+                <configuration>
+                    <mainClass>nl.davefemi.prik2go.Prik2GoApp</mainClass>
                 </configuration>
             </plugin>
             <plugin>

@@ -4,16 +4,16 @@ import nl.davefemi.prik2go.controller.AuthController;
 import nl.davefemi.prik2go.dto.UserDTO;
 import nl.davefemi.prik2go.exceptions.ApplicatieException;
 import nl.davefemi.prik2go.gui.factory.components.util.BerichtDialoog;
+import nl.davefemi.prik2go.gui.factory.components.util.LoadingPanel;
 import nl.davefemi.prik2go.gui.factory.components.util.SwingBringToFront;
 import nl.davefemi.prik2go.gui.factory.components.util.SpringUtilities;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
 import static java.awt.event.KeyEvent.VK_ENTER;
@@ -65,16 +65,46 @@ public class LoginForm extends JPanel {
         googleField.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                try {
-                    if (AuthController.loginWithGoogle()) {
-                        panel.firePropertyChange("googleAuth", false, true);
-                        log.info("Auth gelukt");
+                LoadingPanel loading = new LoadingPanel(dialog);
+                googleField.setEnabled(false);
+                SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
+                    @Override
+                    protected Boolean doInBackground() throws Exception {
+                        try {
+                            if (AuthController.loginWithGoogle()) {
+                                return true;
+                            }
+                        } catch (ApplicatieException ex) {
+                            SwingBringToFront.bringPanelToFront(panel);
+                            loading.setVisible(false);
+                            BerichtDialoog.getErrorDialoog(panel, ex.getMessage());
+                            googleField.setEnabled(true);
+                        }
+                        return false;
                     }
-                } catch (ApplicatieException ex) {
-                    SwingBringToFront.bringPanelToFront(panel);
-                    BerichtDialoog.getErrorDialoog(panel, ex.getMessage());
+
+                    @Override
+                    public void done(){
+                        try {
+                            if (get()){
+                                panel.firePropertyChange("googleAuth", false, true);
+                                loading.setVisible(false);
+                                log.info("Auth gelukt");
+                            }
+                        } catch (InterruptedException ex) {
+                            loading.setVisible(false);
+                            googleField.setEnabled(true);
+                            throw new RuntimeException(ex);
+                        } catch (ExecutionException ex) {
+                            loading.setVisible(false);
+                            googleField.setEnabled(true);
+                            BerichtDialoog.getErrorDialoog(panel, ex.getMessage());
+                        }
+                    }
+                };
+                worker.execute();
+                loading.setVisible(true);
                 }
-            }
         });
         this.panel.add(googleField);
     }

@@ -1,7 +1,6 @@
 package nl.davefemi.prik2go.dto;
 
 import lombok.Data;
-
 import java.time.Instant;
 import java.util.UUID;
 
