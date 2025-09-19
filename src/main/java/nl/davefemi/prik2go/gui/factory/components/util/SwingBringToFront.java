@@ -5,7 +5,6 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 
 public final class SwingBringToFront {
-    private SwingBringToFront() {}
 
     public static void bringPanelToFront(JComponent panel) {
         Window w = SwingUtilities.getWindowAncestor(panel);

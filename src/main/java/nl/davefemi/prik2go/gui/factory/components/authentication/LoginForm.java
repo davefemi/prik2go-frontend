@@ -4,7 +4,7 @@ import nl.davefemi.prik2go.controller.AuthController;
 import nl.davefemi.prik2go.dto.UserDTO;
 import nl.davefemi.prik2go.exceptions.ApplicatieException;
 import nl.davefemi.prik2go.gui.factory.components.util.BerichtDialoog;
-import nl.davefemi.prik2go.gui.factory.components.util.LoadingPanel;
+import nl.davefemi.prik2go.gui.factory.components.util.LoadingBar;
 import nl.davefemi.prik2go.gui.factory.components.util.SwingBringToFront;
 import nl.davefemi.prik2go.gui.factory.components.util.SpringUtilities;
 
@@ -65,7 +65,7 @@ public class LoginForm extends JPanel {
         googleField.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                LoadingPanel loading = new LoadingPanel(dialog);
+                JDialog loading = LoadingBar.getLoadingDialog(dialog);
                 googleField.setEnabled(false);
                 SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
                     @Override

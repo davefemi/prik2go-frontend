@@ -4,12 +4,10 @@ import nl.davefemi.prik2go.controller.AuthController;
 import nl.davefemi.prik2go.exceptions.ApplicatieException;
 import nl.davefemi.prik2go.gui.factory.components.authentication.ChangeForm;
 import nl.davefemi.prik2go.gui.factory.components.util.BerichtDialoog;
-import nl.davefemi.prik2go.gui.factory.components.util.LoadingPanel;
-import nl.davefemi.prik2go.gui.factory.components.util.SpringUtilities;
+import nl.davefemi.prik2go.gui.factory.components.util.LoadingBar;
 import nl.davefemi.prik2go.gui.factory.components.util.SwingBringToFront;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
@@ -82,7 +80,7 @@ public class Menu extends JMenuBar {
     private JMenuItem getLinkAccount(){
         JMenuItem linkAccount = new JMenuItem("Link Google-Account");
         linkAccount.addActionListener(e -> {
-            LoadingPanel loading = new LoadingPanel(SwingUtilities.getWindowAncestor(menu));
+            JDialog loading = LoadingBar.getLoadingDialog(SwingUtilities.getWindowAncestor(menu));
             SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
                 @Override
                 protected Boolean doInBackground() throws Exception {

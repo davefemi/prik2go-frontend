@@ -9,6 +9,7 @@ import javax.swing.*;
 import nl.davefemi.prik2go.gui.factory.components.ActieKnop;
 import nl.davefemi.prik2go.gui.factory.components.Menu;
 import nl.davefemi.prik2go.gui.factory.components.VestigingKnop;
+import nl.davefemi.prik2go.gui.factory.components.util.LoadingBar;
 
 /**
  * Deze klasse is verantwoordelijk voor het bouwen en beheren van de elementen
@@ -24,7 +25,7 @@ public class CustomerViewBuilder {
         private JPanel actiePaneel = null;
         private JLabel totaalKlantenLabel = null;
         private boolean vestigingError = false;
-        private JDialog loading;
+        private JPanel loading = null;
         private final ActionListener vestigingKnopListener;
         private final ActionListener actieKnopListener;
         private final ActionListener visualizerKnopListener;
@@ -45,6 +46,13 @@ public class CustomerViewBuilder {
                 this.vestigingKnopListener = vestigingKnopListener;
                 this.actieKnopListener = actieKnopListener;
                 this.visualizerKnopListener = visualizerKnopListener;
+        }
+
+        public JPanel getLoading(){
+                if (loading == null) {
+                        loading = LoadingBar.getLoadingPanel(false);
+                }
+                return loading;
         }
 
         public JMenuBar getMenu(){

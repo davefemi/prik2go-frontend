@@ -80,7 +80,7 @@ public class CustomerViewController {
         public void getVestigingStatus(Consumer<Map<String, Boolean>> callback, Consumer<Exception> exceptionHandling) {
                 SwingWorker<List<Future<Boolean>>, Void> worker = new SwingWorker<>() {
                         @Override
-                        protected List<Future<Boolean>> doInBackground() {
+                        protected List<Future<Boolean>> doInBackground() throws ApplicatieException {
 
                                 ExecutorService pool = Executors.newFixedThreadPool(Math.min(12, vestigingen.size()));
                                 List<Future<Boolean>> futures = new ArrayList<>();
