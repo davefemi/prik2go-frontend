@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.*;
 
-import nl.davefemi.prik2go.gui.factory.components.ActieKnop;
+import nl.davefemi.prik2go.gui.factory.components.ActionButton;
 import nl.davefemi.prik2go.gui.factory.components.Menu;
-import nl.davefemi.prik2go.gui.factory.components.VestigingKnop;
+import nl.davefemi.prik2go.gui.factory.components.BranchButton;
 import nl.davefemi.prik2go.gui.factory.components.util.LoadingBar;
 
 /**
@@ -18,7 +18,7 @@ import nl.davefemi.prik2go.gui.factory.components.util.LoadingBar;
 public class CustomerViewBuilder {
         private JMenuBar menuBar = null;
         private JPanel vestigingPaneel = null;
-        private ActieKnop statusWisselKnop = null;
+        private ActionButton statusWisselKnop = null;
         private JPanel klantenPaneel = null;
         private JLabel klantKoptekstLabel = null;
         private JTextArea klantNummerArea = null;
@@ -163,7 +163,7 @@ public class CustomerViewBuilder {
         private void voegVestigingKnoppenToe(Map<String, Boolean> locaties) {
                 vestigingPaneel.removeAll();
                 for (Map.Entry<String, Boolean> locatie : locaties.entrySet()) {
-                        JButton knop = new VestigingKnop(locatie.getKey(), locatie.getValue());
+                        JButton knop = new BranchButton(locatie.getKey(), locatie.getValue());
                         knop.addActionListener(vestigingKnopListener);
                         vestigingPaneel.add(knop);
                         }
@@ -174,7 +174,7 @@ public class CustomerViewBuilder {
         private void updateVestigingKnoppen(Map<String, Boolean> locaties ){
                 Component[] knoppen = vestigingPaneel.getComponents();
                 for (Component c : knoppen){
-                        VestigingKnop knop = (VestigingKnop) c;
+                        BranchButton knop = (BranchButton) c;
                         boolean oldStatus = (boolean) knop.getClientProperty("status");
                         boolean newStatus = locaties.get(knop.getClientProperty("vestiging"));
                         if (newStatus != (Boolean) oldStatus){
@@ -272,10 +272,10 @@ public class CustomerViewBuilder {
          * aan te passen en een visualizerknop om de visualizer van de vestigingen te openen.
          */
         private void voegActieKnoppenToe() {
-                statusWisselKnop = ActieKnop.getStatusWisselKnop();      
+                statusWisselKnop = ActionButton.getStatusWisselKnop();
                 statusWisselKnop.addActionListener(actieKnopListener);
                 actiePaneel.add(statusWisselKnop);
-                ActieKnop visualizerKnop = ActieKnop.getVisualizerKnop();
+                ActionButton visualizerKnop = ActionButton.getVisualizerKnop();
                 visualizerKnop.addActionListener(visualizerKnopListener);
                 actiePaneel.add(visualizerKnop);
                 }

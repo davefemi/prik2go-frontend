@@ -4,9 +4,9 @@ import nl.davefemi.prik2go.gui.factory.components.authentication.ChangeForm;
 import nl.davefemi.prik2go.gui.factory.components.authentication.LoginForm;
 import nl.davefemi.prik2go.dto.SessionDTO;
 import nl.davefemi.prik2go.dto.UserDTO;
-import nl.davefemi.prik2go.exceptions.ApplicatieException;
+import nl.davefemi.prik2go.exceptions.ApplicationException;
 import nl.davefemi.prik2go.gui.factory.components.util.ActiveWindow;
-import nl.davefemi.prik2go.gui.factory.components.util.BerichtDialoog;
+import nl.davefemi.prik2go.gui.factory.components.util.MessageDialog;
 import nl.davefemi.prik2go.service.AuthService;
 
 import javax.naming.LimitExceededException;
@@ -64,7 +64,7 @@ public class AuthController {
                     throw new CancellationException(e.getMessage());
                 }
                 log.warning("Login failed: " + e.getMessage());
-                BerichtDialoog.getErrorDialoog(null, e.getMessage());
+                MessageDialog.getErrorDialog(null, e.getMessage());
             }
         }
         if (googleAuth.get()){
@@ -87,7 +87,7 @@ public class AuthController {
         return form.getUserLogin(session != null ? session.getUser() : null);
     }
 
-    public static boolean changePassword() throws IllegalAccessException, LimitExceededException, ApplicatieException {
+    public static boolean changePassword() throws IllegalAccessException, LimitExceededException, ApplicationException {
         if (!isSessionValid()) {
             validateSession();
         }
@@ -98,18 +98,18 @@ public class AuthController {
             return true;
     }
 
-    public static boolean linkGoogleAccount() throws IllegalAccessException, ApplicatieException {
+    public static boolean linkGoogleAccount() throws IllegalAccessException, ApplicationException {
         if (!isSessionValid()){
             validateSession();
         }
         try {
             return authService.linkGoogleAccount();
-        } catch (ApplicatieException e) {
-            throw new ApplicatieException("Failed to Authenticate");
+        } catch (ApplicationException e) {
+            throw new ApplicationException("Failed to Authenticate");
         }
     }
 
-    public static boolean loginWithGoogle() throws ApplicatieException {
+    public static boolean loginWithGoogle() throws ApplicationException {
         session = authService.loginGoogleAccount();
         if (isSessionValid()){
             return true;

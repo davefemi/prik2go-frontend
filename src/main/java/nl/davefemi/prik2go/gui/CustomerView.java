@@ -9,8 +9,8 @@ import javax.swing.*;
 import nl.davefemi.prik2go.Prik2GoApp;
 import nl.davefemi.prik2go.controller.CustomerViewController;
 import nl.davefemi.prik2go.gui.factory.components.util.ActiveWindow;
-import nl.davefemi.prik2go.gui.factory.components.util.BerichtDialoog;
-import nl.davefemi.prik2go.exceptions.VestigingException;
+import nl.davefemi.prik2go.gui.factory.components.util.MessageDialog;
+import nl.davefemi.prik2go.exceptions.BranchException;
 import nl.davefemi.prik2go.gui.factory.components.util.SwingBringToFront;
 import nl.davefemi.prik2go.gui.factory.CustomerViewBuilder;
 import nl.davefemi.prik2go.observer.ApiObserver;
@@ -28,7 +28,7 @@ public class CustomerView extends JFrame implements ApiObserver {
         private static final Dimension FRAME_SIZE = new Dimension (520, 570);
         private static final Point FRAME_LOC = new Point (100,100);
         private static final String TITEL = "Vestigingen";
-        private String geselecteerdeLocatie = null;
+        private String selectedLocation = null;
         private final CustomerView view = this;
 
         /**
@@ -41,8 +41,8 @@ public class CustomerView extends JFrame implements ApiObserver {
                 this.setFocusable(true);
                 this.controller = controller;
                 this.builder = new CustomerViewBuilder(new VestigingKnopListener(),
-                                new ActieKnopListener(), 
-                                new VisualizerKnopListener());
+                                new ActionButtonListener(),
+                                new VisualizerButtonListener());
                 initialize();
                 initData();
         }
@@ -66,7 +66,7 @@ public class CustomerView extends JFrame implements ApiObserver {
                         protected Boolean doInBackground() throws Exception {
                                 CountDownLatch latch = new CountDownLatch(1);
                                 Boolean[] res = new Boolean[1];
-                                controller.getVestigingStatus(vestigingMap ->{
+                                controller.getBranchStatus(vestigingMap ->{
                                         view.add(builder.getVestigingPaneel(vestigingMap), BorderLayout.WEST);
                                         view.setJMenuBar(builder.getMenu());
                                         view.add(builder.getKlantenPaneel(), BorderLayout.CENTER);
@@ -117,8 +117,8 @@ public class CustomerView extends JFrame implements ApiObserver {
          */
         private void updateDisplay(String locatie, boolean actie) {
                 if (locatie != null) {
-                        geselecteerdeLocatie = locatie;
-                        controller.getKlantenDTO(locatie, klanten -> controller.getVestigingStatus(vestigingMap->{
+                        selectedLocation = locatie;
+                        controller.getKlantenDTO(locatie, klanten -> controller.getBranchStatus(vestigingMap->{
                                 builder.updateDisplay(vestigingMap, locatie, klanten.getKlantNummers(),
                                         klanten.getAantalKlanten(), actie);
                                 this.revalidate();
@@ -133,7 +133,7 @@ public class CustomerView extends JFrame implements ApiObserver {
                         });
                 }
                 else {
-                        controller.getVestigingStatus(builder::updateDisplay,
+                        controller.getBranchStatus(builder::updateDisplay,
                                 ex -> logger.warning(ex.getMessage()));
                 }
         }
@@ -144,7 +144,7 @@ public class CustomerView extends JFrame implements ApiObserver {
          */
         @Override
         public void update(ApiSubject s, Object arg) {
-                updateDisplay(geselecteerdeLocatie, true);
+                updateDisplay(selectedLocation, true);
         }
         
         /**
@@ -166,7 +166,7 @@ public class CustomerView extends JFrame implements ApiObserver {
         /**
          * Luisteraar implementatie voor de wisselknop.
          */
-        private class ActieKnopListener implements ActionListener {
+        private class ActionButtonListener implements ActionListener {
 
                 /**
                  * Actie bij een event gegenereerd door deze JButton. Status van de vestiging die hoort bij 
@@ -175,12 +175,12 @@ public class CustomerView extends JFrame implements ApiObserver {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                         ActiveWindow.setActiveComponent(view);
-                                controller.veranderVestigingStatus(geselecteerdeLocatie, ex ->{
-                                        if (ex instanceof VestigingException){
-                                                BerichtDialoog.getInfoDialoog(getContentPane(), ex.getLocalizedMessage());
+                                controller.veranderVestigingStatus(selectedLocation, ex ->{
+                                        if (ex instanceof BranchException){
+                                                MessageDialog.getInfoDialog(getContentPane(), ex.getLocalizedMessage());
                                         }
                                         else {
-                                                BerichtDialoog.getErrorDialoog(getContentPane(), ex.getMessage());
+                                                MessageDialog.getErrorDialog(getContentPane(), ex.getMessage());
                                         }
                                 });
                 }
@@ -189,7 +189,7 @@ public class CustomerView extends JFrame implements ApiObserver {
         /**
          * Luisteraar implementatie voor de visualiseringsknop.
          */
-        private class VisualizerKnopListener implements ActionListener {
+        private class VisualizerButtonListener implements ActionListener {
 
                 /**
                  * Actie bij een event gegenereerd door deze JButton. De VisualizerView wordt opgestart.
@@ -197,7 +197,7 @@ public class CustomerView extends JFrame implements ApiObserver {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                         setLocation(5, getLocation().y);
-                        Prik2GoApp.startVisualisatie();       
+                        Prik2GoApp.launchVisualizer();
                 }     
         }
 

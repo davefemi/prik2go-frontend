@@ -8,10 +8,10 @@ import java.util.Set;
 import java.util.function.Consumer;
 import javax.swing.*;
 import nl.davefemi.prik2go.controller.VisualizerControllerInterface;
-import nl.davefemi.prik2go.exceptions.ApplicatieException;
+import nl.davefemi.prik2go.exceptions.ApplicationException;
 import nl.davefemi.prik2go.gui.factory.components.util.ActiveWindow;
-import nl.davefemi.prik2go.gui.factory.components.util.BerichtDialoog;
-import nl.davefemi.prik2go.exceptions.VestigingException;
+import nl.davefemi.prik2go.gui.factory.components.util.MessageDialog;
+import nl.davefemi.prik2go.exceptions.BranchException;
 import nl.davefemi.prik2go.gui.factory.components.Bar;
 import nl.davefemi.prik2go.gui.factory.components.util.LoadingBar;
 import nl.davefemi.prik2go.observer.ApiObserver;
@@ -75,7 +75,7 @@ public class VisualizerView extends JFrame implements ApiObserver {
                                                 view.remove(loading);
                                                 view.setLayout(null);
                                                 drawBars(stringIntegerMap);
-                                        } catch (ApplicatieException e) {
+                                        } catch (ApplicationException e) {
                                                 throw new RuntimeException(e);
                                         }
                                 });
@@ -100,7 +100,7 @@ public class VisualizerView extends JFrame implements ApiObserver {
          * achtergrondkleur.
          * 
          */
-        private void drawBars(Map<String, Integer> map) throws ApplicatieException {
+        private void drawBars(Map<String, Integer> map) throws ApplicationException {
                 pane.removeAll();
                 try {
                         int size = map.size();
@@ -118,7 +118,7 @@ public class VisualizerView extends JFrame implements ApiObserver {
                         }
                 }
                 catch (Exception e) {
-                        throw new ApplicatieException("Fout met rendering visualiser");
+                        throw new ApplicationException("Fout met rendering visualiser");
                 }
                 
                 this.repaint();
@@ -175,10 +175,10 @@ public class VisualizerView extends JFrame implements ApiObserver {
                 controller.getBarInfo(stringIntegerMap -> {
                     try {
                         drawBars(stringIntegerMap);
-                    } catch (ApplicatieException e) {
+                    } catch (ApplicationException e) {
                         throw new RuntimeException(e);
                     }
-                }, exception -> BerichtDialoog.getErrorDialoog(this, exception.getMessage())
+                }, exception -> MessageDialog.getErrorDialog(this, exception.getMessage())
                 );
         }
 
@@ -195,11 +195,11 @@ public class VisualizerView extends JFrame implements ApiObserver {
                         Bar bar = (Bar) e.getSource();
                         ActiveWindow.setActiveComponent(pane);
                         controller.barClicked(bar.getName(), ex ->{
-                                if (ex instanceof VestigingException){
-                                        BerichtDialoog.getInfoDialoog(getContentPane(), ex.getMessage());
+                                if (ex instanceof BranchException){
+                                        MessageDialog.getInfoDialog(getContentPane(), ex.getMessage());
                                 }
                                 else {
-                                        BerichtDialoog.getErrorDialoog(getContentPane(), ex.getMessage());
+                                        MessageDialog.getErrorDialog(getContentPane(), ex.getMessage());
                                 }
                         });
                 }

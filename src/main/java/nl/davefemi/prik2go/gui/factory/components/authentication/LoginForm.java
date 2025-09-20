@@ -2,8 +2,8 @@ package nl.davefemi.prik2go.gui.factory.components.authentication;
 
 import nl.davefemi.prik2go.controller.AuthController;
 import nl.davefemi.prik2go.dto.UserDTO;
-import nl.davefemi.prik2go.exceptions.ApplicatieException;
-import nl.davefemi.prik2go.gui.factory.components.util.BerichtDialoog;
+import nl.davefemi.prik2go.exceptions.ApplicationException;
+import nl.davefemi.prik2go.gui.factory.components.util.MessageDialog;
 import nl.davefemi.prik2go.gui.factory.components.util.LoadingBar;
 import nl.davefemi.prik2go.gui.factory.components.util.SwingBringToFront;
 import nl.davefemi.prik2go.gui.factory.components.util.SpringUtilities;
@@ -74,10 +74,10 @@ public class LoginForm extends JPanel {
                             if (AuthController.loginWithGoogle()) {
                                 return true;
                             }
-                        } catch (ApplicatieException ex) {
+                        } catch (ApplicationException ex) {
                             SwingBringToFront.bringPanelToFront(panel);
                             loading.setVisible(false);
-                            BerichtDialoog.getErrorDialoog(panel, ex.getMessage());
+                            MessageDialog.getErrorDialog(panel, ex.getMessage());
                             googleField.setEnabled(true);
                         }
                         return false;
@@ -98,7 +98,7 @@ public class LoginForm extends JPanel {
                         } catch (ExecutionException ex) {
                             loading.setVisible(false);
                             googleField.setEnabled(true);
-                            BerichtDialoog.getErrorDialoog(panel, ex.getMessage());
+                            MessageDialog.getErrorDialog(panel, ex.getMessage());
                         }
                     }
                 };

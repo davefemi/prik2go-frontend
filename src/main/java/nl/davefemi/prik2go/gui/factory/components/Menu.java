@@ -1,9 +1,9 @@
 package nl.davefemi.prik2go.gui.factory.components;
 
 import nl.davefemi.prik2go.controller.AuthController;
-import nl.davefemi.prik2go.exceptions.ApplicatieException;
+import nl.davefemi.prik2go.exceptions.ApplicationException;
 import nl.davefemi.prik2go.gui.factory.components.authentication.ChangeForm;
-import nl.davefemi.prik2go.gui.factory.components.util.BerichtDialoog;
+import nl.davefemi.prik2go.gui.factory.components.util.MessageDialog;
 import nl.davefemi.prik2go.gui.factory.components.util.LoadingBar;
 import nl.davefemi.prik2go.gui.factory.components.util.SwingBringToFront;
 
@@ -46,7 +46,7 @@ public class Menu extends JMenuBar {
             } catch (Exception ex) {
                 if (!(ex instanceof CancellationException)) {
                     SwingBringToFront.bringPanelToFront(this);
-                    BerichtDialoog.getErrorDialoog(getParent(), ex.getMessage());
+                    MessageDialog.getErrorDialog(getParent(), ex.getMessage());
                 }
             }
         });
@@ -66,11 +66,11 @@ public class Menu extends JMenuBar {
             ChangeForm form = new ChangeForm();
             try {
                 if (AuthController.changePassword()) {
-                    BerichtDialoog.getInfoDialoog(null, "Password successfully changed");
+                    MessageDialog.getInfoDialog(null, "Password successfully changed");
                 }
             } catch (Exception ex) {
                 if (!(ex instanceof CancellationException)) {
-                    BerichtDialoog.getErrorDialoog(null, ex.getMessage());
+                    MessageDialog.getErrorDialog(null, ex.getMessage());
                 }
             }
         });
@@ -88,10 +88,10 @@ public class Menu extends JMenuBar {
                         if (AuthController.loginWithGoogle()) {
                             return true;
                         }
-                    } catch (ApplicatieException ex) {
+                    } catch (ApplicationException ex) {
                         SwingBringToFront.bringPanelToFront(menu);
                         loading.setVisible(false);
-                        BerichtDialoog.getErrorDialoog(SwingUtilities.getWindowAncestor(menu), ex.getMessage());
+                        MessageDialog.getErrorDialog(SwingUtilities.getWindowAncestor(menu), ex.getMessage());
                     }
                     return false;
                 }
@@ -110,7 +110,7 @@ public class Menu extends JMenuBar {
                     } catch (ExecutionException ex) {
                         loading.setVisible(false);
                         SwingBringToFront.bringPanelToFront(menu);
-                        BerichtDialoog.getErrorDialoog(SwingUtilities.getWindowAncestor(menu), ex.getMessage());
+                        MessageDialog.getErrorDialog(SwingUtilities.getWindowAncestor(menu), ex.getMessage());
                     }
                 }
             };
