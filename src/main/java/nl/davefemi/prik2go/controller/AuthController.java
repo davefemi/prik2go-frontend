@@ -22,8 +22,8 @@ public class AuthController {
     private static final int RETRIES = 5;
     private static final AtomicBoolean googleAuth = new AtomicBoolean(false);
 
-    private static synchronized boolean isSessionValid() {
-        return session != null && session.getExpiresAt().isAfter(Instant.now().plusSeconds(30));
+    public static synchronized boolean isSessionValid() {
+        return session != null && session.getExpiresAt().isAfter(Instant.now().plusSeconds(270));
     }
 
     public static synchronized SessionDTO getSession() {

@@ -17,35 +17,35 @@ import nl.davefemi.prik2go.gui.factory.components.util.LoadingBar;
  */
 public class CustomerViewBuilder {
         private JMenuBar menuBar = null;
-        private JPanel vestigingPaneel = null;
-        private ActionButton statusWisselKnop = null;
-        private JPanel klantenPaneel = null;
-        private JLabel klantKoptekstLabel = null;
-        private JTextArea klantNummerArea = null;
-        private JPanel actiePaneel = null;
-        private JLabel totaalKlantenLabel = null;
-        private boolean vestigingError = false;
+        private JPanel branchPanel = null;
+        private ActionButton statusChangeButton = null;
+        private JPanel customerPanel = null;
+        private JLabel customerHeaderLabel = null;
+        private JTextArea customerIdArea = null;
+        private JPanel actionPanel = null;
+        private JLabel totalCustomerLabel = null;
+        private boolean branchError = false;
         private JPanel loading = null;
-        private final ActionListener vestigingKnopListener;
-        private final ActionListener actieKnopListener;
-        private final ActionListener visualizerKnopListener;
-        private static final String GEENGEGEVENS = "Geen beschikbare gegevens";
-        private static final String WELKOMSTTEKST = "Klik op een vestiging...";
-        private static final String KLANTKOPTEKST = "Klantgegevens ";
-        private static final String TOTAALKLANTTEKST = "Totaal aantal klanten: ";
+        private final ActionListener branchSelectorListener;
+        private final ActionListener actionSelectorListener;
+        private final ActionListener visualizerSelectorListener;
+        private static final String NO_DATA_AVAILABLE = "No data available";
+        private static final String CHOOSE_A_BRANCH = "Choose a branch...";
+        private static final String CUSTOMER_HEADER_TEXT = "Branch: ";
+        private static final String TOTAL_NUMBER_OF_CUSTOMERS = "Total customers: ";
         
         /**
          * Constructor voor deze builder klasse
-         * @param vestigingKnopListener
-         * @param actieKnopListener
-         * @param visualizerKnopListener
+         * @param branchSelectorListener
+         * @param actionSelectorListener
+         * @param visualizerSelectorListener
          */
-        public CustomerViewBuilder(ActionListener vestigingKnopListener,
-                                   ActionListener actieKnopListener,
-                                   ActionListener visualizerKnopListener) {
-                this.vestigingKnopListener = vestigingKnopListener;
-                this.actieKnopListener = actieKnopListener;
-                this.visualizerKnopListener = visualizerKnopListener;
+        public CustomerViewBuilder(ActionListener branchSelectorListener,
+                                   ActionListener actionSelectorListener,
+                                   ActionListener visualizerSelectorListener) {
+                this.branchSelectorListener = branchSelectorListener;
+                this.actionSelectorListener = actionSelectorListener;
+                this.visualizerSelectorListener = visualizerSelectorListener;
         }
 
         public JPanel getLoading(){
@@ -68,70 +68,70 @@ public class CustomerViewBuilder {
          * horen bij vestigingen.
          * @return vestigingpaneel
          */
-        public JPanel getVestigingPaneel(Map<String, Boolean> locaties) {
-                if (vestigingPaneel == null) {
-                        vestigingPaneel = new JPanel();
-                        vestigingPaneel.setLayout(new GridLayout(0, 1));
+        public JPanel getBranchPanel(Map<String, Boolean> locations) {
+                if (branchPanel == null) {
+                        branchPanel = new JPanel();
+                        branchPanel.setLayout(new GridLayout(0, 1));
                 }
-                voegVestigingKnoppenToe(locaties);
-                return vestigingPaneel;
+                addBranchSelectors(locations);
+                return branchPanel;
         
         }
         /**
          * Klantenpaneel wordt opgebouwd
          * @return klantenpaneel
          */
-        public JPanel getKlantenPaneel() {
-                if (klantenPaneel == null) {
-                        klantenPaneel = new JPanel();
-                        klantenPaneel.setLayout(new BorderLayout(0,20));
-                        klantenPaneel.setBorder(BorderFactory.createEmptyBorder(10,10,10,0));
-                        klantenPaneel.add(getKlantNummerPaneel(), BorderLayout.CENTER);
-                        if (!vestigingError) {
-                                klantenPaneel.add(getActiePaneel(), BorderLayout.SOUTH);
+        public JPanel getCustomerPanel() {
+                if (customerPanel == null) {
+                        customerPanel = new JPanel();
+                        customerPanel.setLayout(new BorderLayout(0,20));
+                        customerPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,0));
+                        customerPanel.add(getCustomerIdPanel(), BorderLayout.CENTER);
+                        if (!branchError) {
+                                customerPanel.add(getActionPanel(), BorderLayout.SOUTH);
                         }
                 }
-                return klantenPaneel;
+                return customerPanel;
         }
         
         /**
          * Vlag om aan te geven dat vestigingen niet konden worden opgehaald
          * @param status
          */
-        public void setVestigingError(boolean status) {
-                vestigingError = status;
+        public void setBranchError(boolean status) {
+                branchError = status;
         }
         
         /**
          * Display wordt geupdate en voorzien van nieuwe data, vestigingspanelen worden gerefresht
-         * @param locaties
-         * @param gekozenLocatie
-         * @param klantnummers
-         * @param aantalKlanten
+         * @param locations
+         * @param selectedLocation
+         * @param customerIds
+         * @param amntCustomers
          */
-        public void updateDisplay(Map<String, Boolean> locaties, String gekozenLocatie, List<Integer> klantnummers,
-                        int aantalKlanten, boolean actie) {
-                boolean status = locaties.get(gekozenLocatie);
-                leegVelden();
-                if(klantnummers.size() > 0) {
+        public void updateDisplay(Map<String, Boolean> locations, String selectedLocation, List<Integer> customerIds,
+                        int amntCustomers, boolean action) {
+                boolean status = locations.get(selectedLocation);
+                clearFields();
+                if(customerIds.size() > 0) {
                         int nummer = 1;
-                        for (int n : klantnummers) {
-                                klantNummerArea.append("Klant " + nummer + ": " + String.valueOf(n) + '\n');
+                        for (int n : customerIds) {
+                                customerIdArea.append("Customer " + nummer + ": " + String.valueOf(n) + '\n');
                                 nummer++;
                         }   
                 }
                 else if(!status) {
-                        klantNummerArea.setText("Deze vestiging is gesloten");
+                        customerIdArea.setText("This branch is closed");
                 }
                 else {
-                        klantNummerArea.setText("Geen klantnummers gevonden");
+                        customerIdArea.setText("No customers found");
                 }
-                klantNummerArea.setVisible(true);
-                klantKoptekstLabel.setText(KLANTKOPTEKST + gekozenLocatie + ": ");
-                totaalKlantenLabel.setText(TOTAALKLANTTEKST + aantalKlanten);
-                statusWisselKnop.switchActie(status);
-                statusWisselKnop.setVisible(true);
-                if (actie) updateVestigingKnoppen(locaties);
+                customerIdArea.setVisible(true);
+                customerHeaderLabel.setText(CUSTOMER_HEADER_TEXT + selectedLocation);
+                totalCustomerLabel.setText(TOTAL_NUMBER_OF_CUSTOMERS + amntCustomers);
+                statusChangeButton.switchAction(status);
+                statusChangeButton.setVisible(true);
+                if (action) updateBranchSelectors(locations);
         }
         
         /**
@@ -139,44 +139,44 @@ public class CustomerViewBuilder {
          * @param locaties
          */
         public void updateDisplay(Map<String, Boolean> locaties) {
-                updateVestigingKnoppen(locaties);
+                updateBranchSelectors(locaties);
         }
         
         /**
          * Toewijzing van een error tekst aan het klantenveld bij een locatie.
-         * @param locatie
-         * @param tekst
+         * @param location
+         * @param text
          */
-        public void displayFoutMelding(String locatie, String tekst) {
-                if (klantNummerArea == null) {
-                        klantNummerArea = getKlantNummerArea();
+        public void displayError(String location, String text) {
+                if (customerIdArea == null) {
+                        customerIdArea = getCustomerIdArea();
                         }
-                klantNummerArea.setText(tekst);
-                klantNummerArea.setVisible(true);
-                klantKoptekstLabel.setText(KLANTKOPTEKST + locatie + ": ");
+                customerIdArea.setText(text);
+                customerIdArea.setVisible(true);
+                customerHeaderLabel.setText(CUSTOMER_HEADER_TEXT + location);
         }
         
         /**
          * Methode om het vestigingspaneel te voorzien van de locatienamen en hun status.
-         * @param locaties
+         * @param locations
          */
-        private void voegVestigingKnoppenToe(Map<String, Boolean> locaties) {
-                vestigingPaneel.removeAll();
-                for (Map.Entry<String, Boolean> locatie : locaties.entrySet()) {
+        private void addBranchSelectors(Map<String, Boolean> locations) {
+                branchPanel.removeAll();
+                for (Map.Entry<String, Boolean> locatie : locations.entrySet()) {
                         JButton knop = new BranchButton(locatie.getKey(), locatie.getValue());
-                        knop.addActionListener(vestigingKnopListener);
-                        vestigingPaneel.add(knop);
+                        knop.addActionListener(branchSelectorListener);
+                        branchPanel.add(knop);
                         }
-                vestigingPaneel.revalidate();
-                vestigingPaneel.repaint(); 
+                branchPanel.revalidate();
+                branchPanel.repaint();
         }
 
-        private void updateVestigingKnoppen(Map<String, Boolean> locaties ){
-                Component[] knoppen = vestigingPaneel.getComponents();
+        private void updateBranchSelectors(Map<String, Boolean> locations ){
+                Component[] knoppen = branchPanel.getComponents();
                 for (Component c : knoppen){
                         BranchButton knop = (BranchButton) c;
                         boolean oldStatus = (boolean) knop.getClientProperty("status");
-                        boolean newStatus = locaties.get(knop.getClientProperty("vestiging"));
+                        boolean newStatus = locations.get(knop.getClientProperty("branch"));
                         if (newStatus != (Boolean) oldStatus){
                                 knop.setStatus(newStatus);
                         }
@@ -187,57 +187,57 @@ public class CustomerViewBuilder {
          * Creatie van tekstgebied waarin klantnummers kunnen worden getoond
          * @return
          */
-        private JTextArea getKlantNummerArea() {
-                if (klantNummerArea == null) {
-                        klantNummerArea = new JTextArea();
-                        klantNummerArea.setOpaque(true);
-                        klantNummerArea.setTabSize(7);
-                        klantNummerArea.setBackground(Color.WHITE);
-                        klantNummerArea.setEditable(false);
-                        klantNummerArea.setVisible(false);
+        private JTextArea getCustomerIdArea() {
+                if (customerIdArea == null) {
+                        customerIdArea = new JTextArea();
+                        customerIdArea.setOpaque(true);
+                        customerIdArea.setTabSize(7);
+                        customerIdArea.setBackground(Color.WHITE);
+                        customerIdArea.setEditable(false);
+                        customerIdArea.setVisible(false);
                 }
-                if (vestigingError) {
-                        klantNummerArea.setText(GEENGEGEVENS);
-                        klantNummerArea.setVisible(true);
+                if (branchError) {
+                        customerIdArea.setText(NO_DATA_AVAILABLE);
+                        customerIdArea.setVisible(true);
                 }
-                return klantNummerArea;
+                return customerIdArea;
         }
 
         /**
          * Panel waarop klantnummer zichtbaar worden, wordt opgebouwd. 
          * @return klantnummerpaneel
          */
-        private JPanel getKlantNummerPaneel() {
-                JPanel klantNummerPaneel = new JPanel();
-                klantNummerPaneel.setLayout(new BorderLayout(0,20));             
+        private JPanel getCustomerIdPanel() {
+                JPanel customerIdPanel = new JPanel();
+                customerIdPanel.setLayout(new BorderLayout(0,20));
                 ScrollPane schuifpaneel = new ScrollPane();
-                schuifpaneel.add(getKlantNummerArea());
-                klantNummerPaneel.add(getKlantKoptekstLabel(), BorderLayout.NORTH);
-                klantNummerPaneel.add(schuifpaneel, BorderLayout.CENTER);
-                klantNummerPaneel.add(getTotaalKlantenLabel(), BorderLayout.SOUTH);
-                return klantNummerPaneel;
+                schuifpaneel.add(getCustomerIdArea());
+                customerIdPanel.add(getCustomerHeaderLabel(), BorderLayout.NORTH);
+                customerIdPanel.add(schuifpaneel, BorderLayout.CENTER);
+                customerIdPanel.add(getTotalCustomerLabel(), BorderLayout.SOUTH);
+                return customerIdPanel;
         }
         
         /**
          * Velden worden leeggemaakt ten behoeve van het weergeven van nieuwe informatie.
          */
-        private void leegVelden() {
-                klantNummerArea.setText("");
-                totaalKlantenLabel.setText("");
+        private void clearFields() {
+                customerIdArea.setText("");
+                totalCustomerLabel.setText("");
         }
         
         /**
          * Koptekstlabel wordt gecreeerd
          * @return klantkoptekstlabel
          */
-        private JLabel getKlantKoptekstLabel() {
-                if (klantKoptekstLabel == null) {
-                        klantKoptekstLabel = new JLabel();
+        private JLabel getCustomerHeaderLabel() {
+                if (customerHeaderLabel == null) {
+                        customerHeaderLabel = new JLabel();
                 }
-                String tekst = vestigingError ? "" : WELKOMSTTEKST;
-                klantKoptekstLabel.setText(tekst);
-                klantKoptekstLabel.setFont(new Font("Plain", Font.BOLD, 18));
-                return klantKoptekstLabel;
+                String text = branchError ? "" : CHOOSE_A_BRANCH;
+                customerHeaderLabel.setText(text);
+                customerHeaderLabel.setFont(new Font("Plain", Font.BOLD, 18));
+                return customerHeaderLabel;
         }
         
 
@@ -245,38 +245,38 @@ public class CustomerViewBuilder {
          * Creatie van JLabel voor het weergeven van klantenaantallen
          * @return totaalklantenlabel
          */
-        private JLabel getTotaalKlantenLabel() {
-                if (totaalKlantenLabel == null) {
-                        totaalKlantenLabel = new JLabel();
-                        totaalKlantenLabel.setFont(new Font("Plain", Font.BOLD, 14));
+        private JLabel getTotalCustomerLabel() {
+                if (totalCustomerLabel == null) {
+                        totalCustomerLabel = new JLabel();
+                        totalCustomerLabel.setFont(new Font("Plain", Font.BOLD, 14));
                 }
-                return totaalKlantenLabel;
+                return totalCustomerLabel;
         }
         
         /**
          * Creatie van paneel waarop de actieknoppen zichtbaar zijn
          * @return actiepaneel
          */
-        private JPanel getActiePaneel() {
-                if (actiePaneel == null) {
-                        actiePaneel = new JPanel();
-                        actiePaneel.setBorder(BorderFactory.createEmptyBorder(0,0,0,15));
-                        actiePaneel.setLayout(new GridLayout (0,2));
-                        voegActieKnoppenToe();
+        private JPanel getActionPanel() {
+                if (actionPanel == null) {
+                        actionPanel = new JPanel();
+                        actionPanel.setBorder(BorderFactory.createEmptyBorder(0,0,0,15));
+                        actionPanel.setLayout(new GridLayout (0,2));
+                        addActionSelectors();
                 }
-                return actiePaneel;
+                return actionPanel;
         }
         
         /**
          * Methode om actieknoppen aan te maken. Een actieknop om de status van de actieve vestiging
          * aan te passen en een visualizerknop om de visualizer van de vestigingen te openen.
          */
-        private void voegActieKnoppenToe() {
-                statusWisselKnop = ActionButton.getStatusWisselKnop();
-                statusWisselKnop.addActionListener(actieKnopListener);
-                actiePaneel.add(statusWisselKnop);
-                ActionButton visualizerKnop = ActionButton.getVisualizerKnop();
-                visualizerKnop.addActionListener(visualizerKnopListener);
-                actiePaneel.add(visualizerKnop);
+        private void addActionSelectors() {
+                statusChangeButton = ActionButton.getStatusChangeSelector();
+                statusChangeButton.addActionListener(actionSelectorListener);
+                actionPanel.add(statusChangeButton);
+                ActionButton visualizerButton = ActionButton.getVisualizerSelector();
+                visualizerButton.addActionListener(visualizerSelectorListener);
+                actionPanel.add(visualizerButton);
                 }
 }

@@ -4,6 +4,8 @@ import nl.davefemi.prik2go.controller.AuthController;
 import nl.davefemi.prik2go.dto.CustomerDTO;
 import nl.davefemi.prik2go.dto.SessionDTO;
 import nl.davefemi.prik2go.exceptions.ApplicationException;
+import nl.davefemi.prik2go.gui.factory.components.util.ActiveWindow;
+import nl.davefemi.prik2go.gui.factory.components.util.MessageDialog;
 import nl.davefemi.prik2go.observer.ApiSubject;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -11,19 +13,20 @@ import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-
 import javax.swing.*;
 import javax.swing.Timer;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.*;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ApiClient extends ApiSubject implements ApiClientInterface {
     private static final Log log = LogFactory.getLog(ApiClient.class);
     private final Timer timer = new Timer(1000, new RefreshListener());
     private final RestTemplate restTemplate;
-//    private static final String BASE_URL = "https://prik2go-backend.onrender.com/private/locations/%s";
-    private static final String BASE_URL = "http://localhost:8080/private/locations/%s";
+    private static final String BASE_URL = "https://prik2go-backend.onrender.com/private/locations/%s";
+//    private static final String BASE_URL = "http://localhost:8080/private/locations/%s";
 
     public ApiClient(RestTemplate restTemplate){
         this.restTemplate = restTemplate;
@@ -31,7 +34,7 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     }
 
     private void init(){
-//        startTimer();
+        startTimer();
     }
 
     private void startTimer(){
@@ -43,17 +46,32 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     }
 
     private synchronized HttpEntity<String> getHttpRequest() throws IllegalAccessException {
-        try {
-            AuthController.validateSession();
-            SessionDTO session = AuthController.getSession();
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("Authorization", "Bearer " + session.getToken());
-            return new HttpEntity<>(AuthController.getSession().getUser().toString(), headers);
-        }
-        catch (Exception e){
-            throw new IllegalAccessException("No authorisation");
-        }
+        AtomicBoolean ready = new AtomicBoolean(false);
+        if (!AuthController.isSessionValid())
+                stopTimer();
+            SwingUtilities.invokeLater(()-> {
+                try {
+                    AuthController.validateSession();
+                } catch (Exception e) {
+                        MessageDialog.getErrorDialog((Container) ActiveWindow.getActiveComponent(), "No authorisation");
+                        ready.set(true);
+                }
+            });
+        SessionDTO session = null;
+        HttpHeaders headers = new HttpHeaders();
+            while(!ready.get()) {
+                if (AuthController.isSessionValid()) {
+                    session = AuthController.getSession();
+                    headers.setContentType(MediaType.APPLICATION_JSON);
+                    headers.set("Authorization", "Bearer " + session.getToken());
+                    ready.set(true);
+                    startTimer();
+                }
+            }
+            if (session == null){
+                throw new IllegalAccessException("No authorisation");
+            }
+        return new HttpEntity<>(session.getUser().toString(), headers);
     }
 
     @Override
@@ -109,11 +127,11 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     }
 
 
-    private static class RefreshListener implements ActionListener{
+    private class RefreshListener implements ActionListener{
 
         @Override
         public void actionPerformed(ActionEvent e) {
-//                notifyObservers();
+                notifyObservers();
         }
     }
 }
