@@ -3,14 +3,16 @@ package nl.davefemi.prik2go.gui;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.logging.Logger;
 import javax.swing.*;
 import nl.davefemi.prik2go.Prik2GoApp;
 import nl.davefemi.prik2go.controller.CustomerViewController;
-import nl.davefemi.prik2go.exceptions.BerichtDialoog;
-import nl.davefemi.prik2go.exceptions.VestigingException;
-import nl.davefemi.prik2go.gui.factory.VestigingViewBuilder;
+import nl.davefemi.prik2go.gui.factory.components.util.ActiveWindow;
+import nl.davefemi.prik2go.gui.factory.components.util.MessageDialog;
+import nl.davefemi.prik2go.exceptions.BranchException;
+import nl.davefemi.prik2go.gui.factory.components.util.SwingBringToFront;
+import nl.davefemi.prik2go.gui.factory.CustomerViewBuilder;
 import nl.davefemi.prik2go.observer.ApiObserver;
 import nl.davefemi.prik2go.observer.ApiSubject;
 
@@ -22,12 +24,12 @@ public class CustomerView extends JFrame implements ApiObserver {
         private static final long serialVersionUID = 1L;
         private static final Logger logger = Logger.getLogger(CustomerView.class.getName());
         private final CustomerViewController controller;
-        private final VestigingViewBuilder builder;
+        private final CustomerViewBuilder builder;
         private static final Dimension FRAME_SIZE = new Dimension (520, 570);
         private static final Point FRAME_LOC = new Point (100,100);
         private static final String TITEL = "Vestigingen";
-        private List<String> locaties = null;
-        private String geselecteerdeLocatie = null;
+        private String selectedLocation = null;
+        private final CustomerView view = this;
 
         /**
          * Constructor waarin de controller wordt geïnitialiseerd en vestigingsklassen worden
@@ -36,13 +38,13 @@ public class CustomerView extends JFrame implements ApiObserver {
          */
         public CustomerView(CustomerViewController controller) {
                 super();
+                this.setFocusable(true);
                 this.controller = controller;
-                this.builder = new VestigingViewBuilder(new VestigingKnopListener(),
-                                new ActieKnopListener(), 
-                                new VisualizerKnopListener());
-                setVestigingLocaties();
+                this.builder = new CustomerViewBuilder(new VestigingKnopListener(),
+                                new ActionButtonListener(),
+                                new VisualizerButtonListener());
                 initialize();
-
+                initData();
         }
         
         /**
@@ -50,29 +52,62 @@ public class CustomerView extends JFrame implements ApiObserver {
          * wordt verder geïnitialiseerd.
          */
         private void initialize() {
+                this.getRootPane().putClientProperty("cardName", "CustomerView");
                 this.setTitle(TITEL);
                 this.setSize(FRAME_SIZE);
                 this.setLocation(FRAME_LOC);
                 this.setLayout(new BorderLayout());
-                JLabel loading = new JLabel("Loading...");
-                loading.setVerticalAlignment(SwingConstants.CENTER);
-                loading.setHorizontalAlignment(SwingConstants.CENTER);
-                this.add(loading, BorderLayout.CENTER);
-                this.setVisible(true);
-                controller.getVestigingStatus(vestigingMap ->{
-                        this.remove(loading);
-                        this.setJMenuBar(builder.getMenu());
-                        this.add(builder.getVestigingPaneel(vestigingMap), BorderLayout.WEST);
-                        this.add(builder.getKlantenPaneel(), BorderLayout.CENTER);
-                        this.revalidate();
-                        this.repaint();
-                        logger.info("App initialized");
-                }, exception->{builder.setVestigingError(true);});
+                this.add(builder.getLoading(), BorderLayout.CENTER);
+        }
+
+        private void initData(){
+                SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
+                        @Override
+                        protected Boolean doInBackground() throws Exception {
+                                CountDownLatch latch = new CountDownLatch(1);
+                                Boolean[] res = new Boolean[1];
+                                controller.getBranchStatus(vestigingMap ->{
+                                        view.add(builder.getVestigingPaneel(vestigingMap), BorderLayout.WEST);
+                                        view.setJMenuBar(builder.getMenu());
+                                        view.add(builder.getKlantenPaneel(), BorderLayout.CENTER);
+                                        res[0] = true;
+                                        latch.countDown();
+                                }, exception->{res[0] = false; latch.countDown();});
+                                latch.await();
+                                return res[0];
+                        }
+
+                        @Override
+                        protected void done(){
+                                view.remove(builder.getLoading());
+                                try {
+                                        if (get()) {
+                                                view.revalidate();
+                                                view.repaint();
+                                                logger.info("App initialized");
+                                        }
+                                        else {
+                                                logger.info("App init false");
+                                                builder.setVestigingError(true);
+                                        }
+                                } catch (Exception e) {
+                                        logger.info("App init exception");
+                                        builder.setVestigingError(true);
+                                }
+                                finally {
+                                        view.revalidate();
+                                        view.repaint();
+                                }
+                        }
+                };
+                worker.execute();
+        }
+
+
+        public void bringToFront() {
+                SwingBringToFront.bringWindowToFront(this);
         }
          
-        private void setVestigingLocaties() {
-                this.locaties = controller.getVestigingLocaties();
-        }
 
         /**
          * Klantgegevens worden opgehaald bij de geselecteerde locatie. Als er geen locatie
@@ -82,17 +117,14 @@ public class CustomerView extends JFrame implements ApiObserver {
          */
         private void updateDisplay(String locatie, boolean actie) {
                 if (locatie != null) {
-                        geselecteerdeLocatie = locatie;
-                        controller.getKlantenDTO(locatie, klanten -> {
-                                controller.getVestigingStatus(vestigingMap->{
-                                        builder.updateDisplay(vestigingMap, locatie, klanten.getKlantNummers(),
-                                                klanten.getAantalKlanten(), actie);
-                                        this.revalidate();
-                                        this.repaint();
-                                }, e ->{
-                                        logger.warning(e.getMessage());
-                                });
-                                }, e -> {logger.warning(e.getMessage());
+                        selectedLocation = locatie;
+                        controller.getKlantenDTO(locatie, klanten -> controller.getBranchStatus(vestigingMap->{
+                                builder.updateDisplay(vestigingMap, locatie, klanten.getKlantNummers(),
+                                        klanten.getAantalKlanten(), actie);
+                                this.revalidate();
+                                this.repaint();
+                        }, e -> logger.warning(e.getMessage())),
+                                e -> {logger.warning(e.getMessage());
                                 builder.displayFoutMelding(locatie,
                                         e instanceof IllegalAccessException
                                                 ?"No authorisation"
@@ -101,9 +133,8 @@ public class CustomerView extends JFrame implements ApiObserver {
                         });
                 }
                 else {
-                        controller.getVestigingStatus(vestigingMap ->{
-                                builder.updateDisplay(vestigingMap);
-                        }, ex -> {logger.warning(ex.getMessage());});
+                        controller.getBranchStatus(builder::updateDisplay,
+                                ex -> logger.warning(ex.getMessage()));
                 }
         }
 
@@ -113,7 +144,7 @@ public class CustomerView extends JFrame implements ApiObserver {
          */
         @Override
         public void update(ApiSubject s, Object arg) {
-                updateDisplay(geselecteerdeLocatie, true);
+                updateDisplay(selectedLocation, true);
         }
         
         /**
@@ -127,6 +158,7 @@ public class CustomerView extends JFrame implements ApiObserver {
                  */
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                        ActiveWindow.setActiveComponent(view);
                         updateDisplay((String) ((JButton) e.getSource()).getClientProperty("vestiging"), false);
                 }
         }
@@ -134,7 +166,7 @@ public class CustomerView extends JFrame implements ApiObserver {
         /**
          * Luisteraar implementatie voor de wisselknop.
          */
-        private class ActieKnopListener implements ActionListener {
+        private class ActionButtonListener implements ActionListener {
 
                 /**
                  * Actie bij een event gegenereerd door deze JButton. Status van de vestiging die hoort bij 
@@ -142,12 +174,13 @@ public class CustomerView extends JFrame implements ApiObserver {
                  */
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                                controller.veranderVestigingStatus(geselecteerdeLocatie, ex ->{
-                                        if (ex instanceof VestigingException){
-                                                BerichtDialoog.getInfoDialoog(getContentPane(), ex.getLocalizedMessage());
+                        ActiveWindow.setActiveComponent(view);
+                                controller.veranderVestigingStatus(selectedLocation, ex ->{
+                                        if (ex instanceof BranchException){
+                                                MessageDialog.getInfoDialog(getContentPane(), ex.getLocalizedMessage());
                                         }
                                         else {
-                                                BerichtDialoog.getErrorDialoog(getContentPane(), ex.getMessage());
+                                                MessageDialog.getErrorDialog(getContentPane(), ex.getMessage());
                                         }
                                 });
                 }
@@ -156,7 +189,7 @@ public class CustomerView extends JFrame implements ApiObserver {
         /**
          * Luisteraar implementatie voor de visualiseringsknop.
          */
-        private class VisualizerKnopListener implements ActionListener {
+        private class VisualizerButtonListener implements ActionListener {
 
                 /**
                  * Actie bij een event gegenereerd door deze JButton. De VisualizerView wordt opgestart.
@@ -164,7 +197,9 @@ public class CustomerView extends JFrame implements ApiObserver {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                         setLocation(5, getLocation().y);
-                        Prik2GoApp.startVisualisatie();       
+                        Prik2GoApp.launchVisualizer();
                 }     
         }
+
 }
+

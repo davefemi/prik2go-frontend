@@ -1,10 +1,10 @@
 package nl.davefemi.prik2go;
 
-import nl.davefemi.prik2go.authentication.Authenticator;
+import nl.davefemi.prik2go.controller.AuthController;
 import nl.davefemi.prik2go.client.ApiClient;
 import nl.davefemi.prik2go.controller.VisualizerController;
-import nl.davefemi.prik2go.exceptions.ApplicatieException;
-import nl.davefemi.prik2go.exceptions.BerichtDialoog;
+import nl.davefemi.prik2go.exceptions.ApplicationException;
+import nl.davefemi.prik2go.gui.factory.components.util.MessageDialog;
 import nl.davefemi.prik2go.gui.CustomerView;
 import nl.davefemi.prik2go.gui.VisualizerView;
 import nl.davefemi.prik2go.controller.CustomerViewController;
@@ -41,19 +41,19 @@ public class Prik2GoApp {
                 service = new ApiService((ApiClient) apiSubject);
                 try {
                         UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-                        boolean result = Authenticator.validateSession();
+                        boolean result = AuthController.validateSession();
 
                         if (!result){
                                 System.exit(0);
                         }
-                        startSessie();
+                        launchSession();
                 }
                 catch (Exception e) {
                         if(e instanceof UnsupportedLookAndFeelException) {
                                 logger.warning(e.getMessage());
                         }
                         if(!(e instanceof CancellationException)) {
-                                BerichtDialoog.getErrorDialoog(null, e.getMessage());
+                                MessageDialog.getErrorDialog(null, e.getMessage());
                         }
                         System.exit(0);
                 }
@@ -63,7 +63,7 @@ public class Prik2GoApp {
          * Methode voor het opstarten van de visualizer view. Als er al een visualizer view is geïnitialiseerd,
          * wordt deze zichtbaar. Bij een exceptie wordt een error dialoog getoond.
          */
-        public static void startVisualisatie() {
+        public static void launchVisualizer() {
                 try {
                 if (visualizerView == null) {
                         visualizerView = new VisualizerView(new VisualizerController(service));
@@ -71,12 +71,12 @@ public class Prik2GoApp {
                 SwingUtilities.invokeLater(() -> {
                         VisualizerView gui = visualizerView;
                         apiSubject.attach(gui);
-                        gui.setVisible(true);
                         gui.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+                        gui.setVisible(true);
                 });
                 }
                 catch (Exception e) {
-                        BerichtDialoog.getErrorDialoog(null, e.getMessage());
+                        MessageDialog.getErrorDialog(null, e.getMessage());
                 }
         }
         
@@ -84,15 +84,17 @@ public class Prik2GoApp {
          * Methode voor het opstarten van de sessie met de creatie van de VestigingController
          * en de VestigingView.
          */
-        private static void startSessie() throws ApplicatieException, IllegalAccessException {
+        private static void launchSession() throws ApplicationException, IllegalAccessException {
                                 CustomerViewController customerViewController = new CustomerViewController(service);
                                 SwingUtilities.invokeLater(() -> {
                                         CustomerView gui = new CustomerView(customerViewController);
                                         gui.setVisible(true);
                                         apiSubject.attach(gui);
                                         gui.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+                                        gui.bringToFront();;
                                 });
         }
+
 
 
 }

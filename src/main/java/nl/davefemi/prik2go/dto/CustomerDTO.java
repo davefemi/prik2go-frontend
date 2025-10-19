@@ -13,7 +13,7 @@ import java.util.List;
  */
 @Getter
 @Setter
-public class KlantenDTO {
+public class CustomerDTO {
         private List<Integer> klantNummers = new ArrayList<>();
         private int aantalKlanten;
 }

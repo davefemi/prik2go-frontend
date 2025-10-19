@@ -7,12 +7,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import javax.swing.*;
-
 import nl.davefemi.prik2go.controller.VisualizerControllerInterface;
-import nl.davefemi.prik2go.exceptions.ApplicatieException;
-import nl.davefemi.prik2go.exceptions.BerichtDialoog;
-import nl.davefemi.prik2go.exceptions.VestigingException;
+import nl.davefemi.prik2go.exceptions.ApplicationException;
+import nl.davefemi.prik2go.gui.factory.components.util.ActiveWindow;
+import nl.davefemi.prik2go.gui.factory.components.util.MessageDialog;
+import nl.davefemi.prik2go.exceptions.BranchException;
 import nl.davefemi.prik2go.gui.factory.components.Bar;
+import nl.davefemi.prik2go.gui.factory.components.util.LoadingBar;
 import nl.davefemi.prik2go.observer.ApiObserver;
 import nl.davefemi.prik2go.observer.ApiSubject;
 
@@ -30,6 +31,8 @@ public class VisualizerView extends JFrame implements ApiObserver {
         private final int HEIGHT_PANE = HEIGHT_FRAME - 3 * MARGIN;
         private static final int HGAP = 10;
         private Container pane = null;
+        private final VisualizerView view = this;
+        private JPanel loading;
 
 
         /**
@@ -41,20 +44,7 @@ public class VisualizerView extends JFrame implements ApiObserver {
                 super();
                 this.controller = controller;
                 initialize();
-                JLabel loading = new JLabel("Loading...");
-                this.setLayout(new BorderLayout());
-                loading.setHorizontalAlignment(SwingConstants.CENTER);
-                loading.setVerticalAlignment(SwingConstants.CENTER);
-                this.add(loading, BorderLayout.CENTER);
-                getMap(stringIntegerMap -> {
-                    try {
-                            this.remove(loading);
-                            this.setLayout(null);
-                            drawBars(stringIntegerMap);
-                    } catch (ApplicatieException e) {
-                            throw new RuntimeException(e);
-                    }
-                });
+                initData();
         }
 
         /**
@@ -71,7 +61,28 @@ public class VisualizerView extends JFrame implements ApiObserver {
                 this.setLocation((int) Math.round((dim.width - WIDTH_FRAME) / 1.1)
                                         ,(int) Math.round((dim.height - HEIGHT_FRAME) / 1.1)
                                         );
-                
+                this.setLayout(new BorderLayout());
+                loading = LoadingBar.getLoadingPanel(false);
+                this.add(loading, BorderLayout.CENTER);
+        }
+
+        private void initData(){
+                SwingWorker<Void, Void> worker = new SwingWorker<>() {
+                        @Override
+                        protected Void doInBackground()  {
+                                getMap(stringIntegerMap -> {
+                                        try {
+                                                view.remove(loading);
+                                                view.setLayout(null);
+                                                drawBars(stringIntegerMap);
+                                        } catch (ApplicationException e) {
+                                                throw new RuntimeException(e);
+                                        }
+                                });
+                                return null;
+                        }
+                };
+                worker.execute();
         }
         
         /**
@@ -79,10 +90,8 @@ public class VisualizerView extends JFrame implements ApiObserver {
          * @return map<locatie, aantal klanten>
          */
         private void getMap(Consumer<Map<String, Integer>> callback) {
-                controller.getBarInfo(
-                        stringIntegerMap -> callback.accept(stringIntegerMap),
-                        exception ->{
-                });
+                controller.getBarInfo(callback, exception ->{}
+                );
         }
 
         /**
@@ -91,7 +100,7 @@ public class VisualizerView extends JFrame implements ApiObserver {
          * achtergrondkleur.
          * 
          */
-        private void drawBars(Map<String, Integer> map) throws ApplicatieException {
+        private void drawBars(Map<String, Integer> map) throws ApplicationException {
                 pane.removeAll();
                 try {
                         int size = map.size();
@@ -109,7 +118,7 @@ public class VisualizerView extends JFrame implements ApiObserver {
                         }
                 }
                 catch (Exception e) {
-                        throw new ApplicatieException("Fout met rendering visualiser");
+                        throw new ApplicationException("Fout met rendering visualiser");
                 }
                 
                 this.repaint();
@@ -166,10 +175,10 @@ public class VisualizerView extends JFrame implements ApiObserver {
                 controller.getBarInfo(stringIntegerMap -> {
                     try {
                         drawBars(stringIntegerMap);
-                    } catch (ApplicatieException e) {
+                    } catch (ApplicationException e) {
                         throw new RuntimeException(e);
                     }
-                }, exception -> BerichtDialoog.getErrorDialoog(this, exception.getMessage())
+                }, exception -> MessageDialog.getErrorDialog(this, exception.getMessage())
                 );
         }
 
@@ -184,12 +193,13 @@ public class VisualizerView extends JFrame implements ApiObserver {
                  */
                 public void mousePressed(MouseEvent e) {
                         Bar bar = (Bar) e.getSource();
+                        ActiveWindow.setActiveComponent(pane);
                         controller.barClicked(bar.getName(), ex ->{
-                                if (ex instanceof VestigingException){
-                                        BerichtDialoog.getInfoDialoog(getContentPane(), ex.getMessage());
+                                if (ex instanceof BranchException){
+                                        MessageDialog.getInfoDialog(getContentPane(), ex.getMessage());
                                 }
                                 else {
-                                        BerichtDialoog.getErrorDialoog(getContentPane(), ex.getMessage());
+                                        MessageDialog.getErrorDialog(getContentPane(), ex.getMessage());
                                 }
                         });
                 }

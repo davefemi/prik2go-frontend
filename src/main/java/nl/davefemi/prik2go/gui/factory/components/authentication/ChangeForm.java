@@ -1,7 +1,7 @@
-package nl.davefemi.prik2go.authentication;
+package nl.davefemi.prik2go.gui.factory.components.authentication;
 
 import nl.davefemi.prik2go.dto.UserDTO;
-import nl.davefemi.prik2go.gui.factory.components.SpringUtilities;
+import nl.davefemi.prik2go.gui.factory.components.util.SpringUtilities;
 import javax.naming.LimitExceededException;
 import javax.swing.*;
 import java.awt.*;

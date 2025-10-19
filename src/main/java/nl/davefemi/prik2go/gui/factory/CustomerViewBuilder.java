@@ -6,24 +6,26 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.*;
 
-import nl.davefemi.prik2go.gui.factory.components.ActieKnop;
+import nl.davefemi.prik2go.gui.factory.components.ActionButton;
 import nl.davefemi.prik2go.gui.factory.components.Menu;
-import nl.davefemi.prik2go.gui.factory.components.VestigingKnop;
+import nl.davefemi.prik2go.gui.factory.components.BranchButton;
+import nl.davefemi.prik2go.gui.factory.components.util.LoadingBar;
 
 /**
  * Deze klasse is verantwoordelijk voor het bouwen en beheren van de elementen
  * van de VestigingView.
  */
-public class VestigingViewBuilder {
+public class CustomerViewBuilder {
         private JMenuBar menuBar = null;
         private JPanel vestigingPaneel = null;
-        private ActieKnop statusWisselKnop = null;
+        private ActionButton statusWisselKnop = null;
         private JPanel klantenPaneel = null;
         private JLabel klantKoptekstLabel = null;
         private JTextArea klantNummerArea = null;
         private JPanel actiePaneel = null;
         private JLabel totaalKlantenLabel = null;
         private boolean vestigingError = false;
+        private JPanel loading = null;
         private final ActionListener vestigingKnopListener;
         private final ActionListener actieKnopListener;
         private final ActionListener visualizerKnopListener;
@@ -38,12 +40,19 @@ public class VestigingViewBuilder {
          * @param actieKnopListener
          * @param visualizerKnopListener
          */
-        public VestigingViewBuilder(ActionListener vestigingKnopListener, 
-                        ActionListener actieKnopListener, 
-                        ActionListener visualizerKnopListener) {
+        public CustomerViewBuilder(ActionListener vestigingKnopListener,
+                                   ActionListener actieKnopListener,
+                                   ActionListener visualizerKnopListener) {
                 this.vestigingKnopListener = vestigingKnopListener;
                 this.actieKnopListener = actieKnopListener;
                 this.visualizerKnopListener = visualizerKnopListener;
+        }
+
+        public JPanel getLoading(){
+                if (loading == null) {
+                        loading = LoadingBar.getLoadingPanel(false);
+                }
+                return loading;
         }
 
         public JMenuBar getMenu(){
@@ -154,7 +163,7 @@ public class VestigingViewBuilder {
         private void voegVestigingKnoppenToe(Map<String, Boolean> locaties) {
                 vestigingPaneel.removeAll();
                 for (Map.Entry<String, Boolean> locatie : locaties.entrySet()) {
-                        JButton knop = new VestigingKnop(locatie.getKey(), locatie.getValue());
+                        JButton knop = new BranchButton(locatie.getKey(), locatie.getValue());
                         knop.addActionListener(vestigingKnopListener);
                         vestigingPaneel.add(knop);
                         }
@@ -165,7 +174,7 @@ public class VestigingViewBuilder {
         private void updateVestigingKnoppen(Map<String, Boolean> locaties ){
                 Component[] knoppen = vestigingPaneel.getComponents();
                 for (Component c : knoppen){
-                        VestigingKnop knop = (VestigingKnop) c;
+                        BranchButton knop = (BranchButton) c;
                         boolean oldStatus = (boolean) knop.getClientProperty("status");
                         boolean newStatus = locaties.get(knop.getClientProperty("vestiging"));
                         if (newStatus != (Boolean) oldStatus){
@@ -263,10 +272,10 @@ public class VestigingViewBuilder {
          * aan te passen en een visualizerknop om de visualizer van de vestigingen te openen.
          */
         private void voegActieKnoppenToe() {
-                statusWisselKnop = ActieKnop.getStatusWisselKnop();      
+                statusWisselKnop = ActionButton.getStatusWisselKnop();
                 statusWisselKnop.addActionListener(actieKnopListener);
                 actiePaneel.add(statusWisselKnop);
-                ActieKnop visualizerKnop = ActieKnop.getVisualizerKnop();
+                ActionButton visualizerKnop = ActionButton.getVisualizerKnop();
                 visualizerKnop.addActionListener(visualizerKnopListener);
                 actiePaneel.add(visualizerKnop);
                 }

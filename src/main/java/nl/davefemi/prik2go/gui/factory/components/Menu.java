@@ -1,15 +1,19 @@
 package nl.davefemi.prik2go.gui.factory.components;
 
-import nl.davefemi.prik2go.authentication.Authenticator;
-import nl.davefemi.prik2go.authentication.ChangeForm;
-import nl.davefemi.prik2go.exceptions.BerichtDialoog;
+import nl.davefemi.prik2go.controller.AuthController;
+import nl.davefemi.prik2go.exceptions.ApplicationException;
+import nl.davefemi.prik2go.gui.factory.components.authentication.ChangeForm;
+import nl.davefemi.prik2go.gui.factory.components.util.MessageDialog;
+import nl.davefemi.prik2go.gui.factory.components.util.LoadingBar;
+import nl.davefemi.prik2go.gui.factory.components.util.SwingBringToFront;
 
-import javax.naming.LimitExceededException;
 import javax.swing.*;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 
 public class Menu extends JMenuBar {
     private JMenu account = null;
+    private Menu menu = this;
 
     public Menu(){
         super();
@@ -26,6 +30,7 @@ public class Menu extends JMenuBar {
             account.add(getLogin());
             account.add(getLogout());
             account.add(getChangePassword());
+            account.add(getLinkAccount());
         }
         return account;
     }
@@ -34,10 +39,15 @@ public class Menu extends JMenuBar {
         JMenuItem login = new JMenuItem("Login");
         login.addActionListener(e -> {
             try {
-                Authenticator.validateSession();
+                if (AuthController.validateSession())
+                {
+                    SwingBringToFront.bringPanelToFront(this);
+                }
             } catch (Exception ex) {
-                if (!(ex instanceof CancellationException))
-                BerichtDialoog.getErrorDialoog(null, ex.getMessage());
+                if (!(ex instanceof CancellationException)) {
+                    SwingBringToFront.bringPanelToFront(this);
+                    MessageDialog.getErrorDialog(getParent(), ex.getMessage());
+                }
             }
         });
         return login;
@@ -55,14 +65,59 @@ public class Menu extends JMenuBar {
         changePassword.addActionListener(e ->{
             ChangeForm form = new ChangeForm();
             try {
-                if (Authenticator.changePassword())
-                    BerichtDialoog.getInfoDialoog(null, "Password successfully changed");
+                if (AuthController.changePassword()) {
+                    MessageDialog.getInfoDialog(null, "Password successfully changed");
+                }
             } catch (Exception ex) {
-                if (!(ex instanceof CancellationException))
-                BerichtDialoog.getErrorDialoog(null, ex.getMessage());
+                if (!(ex instanceof CancellationException)) {
+                    MessageDialog.getErrorDialog(null, ex.getMessage());
+                }
             }
         });
         return changePassword;
+    }
+
+    private JMenuItem getLinkAccount(){
+        JMenuItem linkAccount = new JMenuItem("Link Google-Account");
+        linkAccount.addActionListener(e -> {
+            JDialog loading = LoadingBar.getLoadingDialog(SwingUtilities.getWindowAncestor(menu));
+            SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
+                @Override
+                protected Boolean doInBackground() throws Exception {
+                    try {
+                        if (AuthController.loginWithGoogle()) {
+                            return true;
+                        }
+                    } catch (ApplicationException ex) {
+                        SwingBringToFront.bringPanelToFront(menu);
+                        loading.setVisible(false);
+                        MessageDialog.getErrorDialog(SwingUtilities.getWindowAncestor(menu), ex.getMessage());
+                    }
+                    return false;
+                }
+
+                @Override
+                public void done(){
+                    try {
+                        if (get()){
+                            SwingBringToFront.bringPanelToFront(menu);
+                            loading.setVisible(false);
+                        }
+                    } catch (InterruptedException ex) {
+                        loading.setVisible(false);
+                        SwingBringToFront.bringPanelToFront(menu);
+                        throw new RuntimeException(ex);
+                    } catch (ExecutionException ex) {
+                        loading.setVisible(false);
+                        SwingBringToFront.bringPanelToFront(menu);
+                        MessageDialog.getErrorDialog(SwingUtilities.getWindowAncestor(menu), ex.getMessage());
+                    }
+                }
+            };
+            worker.execute();
+            loading.setVisible(true);
+        });
+        return linkAccount;
     }
 
 }

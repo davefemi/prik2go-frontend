@@ -7,7 +7,7 @@ import javax.swing.JButton;
 /**
  * Subklasse van JButton voor de aanmaak van een vestigingknop.
  */
-public class VestigingKnop extends JButton {
+public class BranchButton extends JButton {
         private static final long serialVersionUID = 1L;
         private static final Color OPENKLEUR = new Color (187, 214, 236);
         private static final Color GESLOTENKLEUR = new Color(236, 231, 231);
@@ -18,7 +18,7 @@ public class VestigingKnop extends JButton {
          * @param locatie van de vestiging
          * @param open: status van de vestiging
          */
-        public VestigingKnop(String locatie, boolean open) {
+        public BranchButton(String locatie, boolean open) {
                 super(locatie);
                 this.setForeground(LETTERKLEUR);
                 this.setFocusable(false);

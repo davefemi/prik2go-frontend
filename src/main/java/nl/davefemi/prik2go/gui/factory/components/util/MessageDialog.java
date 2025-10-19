@@ -1,9 +1,9 @@
-package nl.davefemi.prik2go.exceptions;
+package nl.davefemi.prik2go.gui.factory.components.util;
 
 import javax.swing.*;
 import java.awt.*;
 
-public abstract class BerichtDialoog {
+public abstract class MessageDialog {
         private static boolean infoDialog = false;
         private static boolean errorDialog = false;
         
@@ -12,7 +12,7 @@ public abstract class BerichtDialoog {
          * @param parent bijbehorende container, indien van toepassing
          * @param bericht te vertonen 
          */
-        public static void getInfoDialoog(Container parent, String bericht) {
+        public static void getInfoDialog(Container parent, String bericht) {
                 if (!infoDialog) {
                         Toolkit.getDefaultToolkit().beep();
                                 infoDialog = true;
@@ -26,7 +26,7 @@ public abstract class BerichtDialoog {
          * @param parent bijbehorende container, indien van toepassing
          * @param error te vertonen
          */
-        public static void getErrorDialoog(Container parent, String error) {
+        public static void getErrorDialog(Container parent, String error) {
                 if (!errorDialog) {
                         Toolkit.getDefaultToolkit().beep();
                                 errorDialog = true;

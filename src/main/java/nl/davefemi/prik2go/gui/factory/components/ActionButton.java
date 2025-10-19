@@ -8,7 +8,7 @@ import javax.swing.JButton;
  * Klasse die een actieknop respresenteert die hoort bij de functies 'open vestiging',
  * 'sluit vestiging' en 'visualizer'
  */
-public class ActieKnop extends JButton {
+public class ActionButton extends JButton {
         private static final long serialVersionUID = 1L;
         private static final String STATUSWISSEL = "statuswissel";
         private static final String SLUITVESTIGING = "Sluit vestiging";
@@ -19,7 +19,7 @@ public class ActieKnop extends JButton {
          * Constructor voor deze ActieKnop
          * @param text
          */
-        private ActieKnop(String actie) {
+        private ActionButton(String actie) {
                 super(actie);
                 this.setBackground(new Color(211,211,211));
                 this.setFocusable(false); 
@@ -29,8 +29,8 @@ public class ActieKnop extends JButton {
          * Methode die een JButton met de tekst voor de wisselfunctie terugkeert.
          * @return wisselknop
          */
-        public static ActieKnop getStatusWisselKnop() {
-                ActieKnop wisselKnop = new ActieKnop(SLUITVESTIGING);
+        public static ActionButton getStatusWisselKnop() {
+                ActionButton wisselKnop = new ActionButton(SLUITVESTIGING);
                 wisselKnop.putClientProperty("actie", STATUSWISSEL);
                 wisselKnop.setBackground(new Color(211,211,211));
                 wisselKnop.setFocusable(false);
@@ -42,8 +42,8 @@ public class ActieKnop extends JButton {
          * Methode die een JButton met de tekst voor de visualizerfunctie terugkeert.
          * @return visualizerknop
          */
-        public static ActieKnop getVisualizerKnop() {
-                ActieKnop visualizerKnop = new ActieKnop(VISUALIZER);
+        public static ActionButton getVisualizerKnop() {
+                ActionButton visualizerKnop = new ActionButton(VISUALIZER);
                 visualizerKnop.setBackground(new Color(211,211,211));
                 visualizerKnop.setFocusable(false);
                 return visualizerKnop;

@@ -1,7 +1,7 @@
 package nl.davefemi.prik2go.controller;
 
-import nl.davefemi.prik2go.dto.KlantenDTO;
-import nl.davefemi.prik2go.exceptions.ApplicatieException;
+import nl.davefemi.prik2go.dto.CustomerDTO;
+import nl.davefemi.prik2go.exceptions.ApplicationException;
 import nl.davefemi.prik2go.service.DataServiceInterface;
 
 import javax.swing.*;
@@ -22,24 +22,24 @@ import java.util.function.Consumer;
  */
 public class CustomerViewController {
         private final DataServiceInterface service;
-        private List<String> vestigingen = null;
+        private List<String> branches = null;
 
         /**
          * Constructor van de controller. Mapper wordt gecreëerd en
          * de vestigingen worden geïnitialiseerd
-         * @throws ApplicatieException als er een fout optreedt met de verbinding met de
+         * @throws ApplicationException als er een fout optreedt met de verbinding met de
          * database
          */
-        public CustomerViewController(DataServiceInterface service) throws ApplicatieException, IllegalAccessException {
+        public CustomerViewController(DataServiceInterface service) throws ApplicationException, IllegalAccessException {
                 this.service = service;
-                initVestigingen();
+                initBranches();
         }
         
         /**
          * Verzorgt de initialisatie van de Vestiging-arraylist.
          */
-        private void initVestigingen() throws ApplicatieException, IllegalAccessException {
-                vestigingen = service.getVestigingen();
+        private void initBranches() throws ApplicationException, IllegalAccessException {
+                branches = service.getBranches();
         }
 
         
@@ -48,7 +48,7 @@ public class CustomerViewController {
          * @return List<String> plaatsnamen
          */
         public List<String> getVestigingLocaties() {
-                return vestigingen;
+                return branches;
         }
         
                 
@@ -57,17 +57,17 @@ public class CustomerViewController {
          * terugkeerwaarde van de dto is null, wordt een exceptie opgegooid.
          * @param locatie van de vestiging
          */
-        public void getKlantenDTO(String locatie, Consumer<KlantenDTO> callback, Consumer<Exception> exceptionConsumer) {
-                SwingWorker<KlantenDTO, Void> worker = new SwingWorker<>() {
+        public void getKlantenDTO(String locatie, Consumer<CustomerDTO> callback, Consumer<Exception> exceptionConsumer) {
+                SwingWorker<CustomerDTO, Void> worker = new SwingWorker<>() {
                         @Override
-                        protected KlantenDTO doInBackground() throws Exception {
-                                return service.getKlantenDTO(locatie);
+                        protected CustomerDTO doInBackground() throws Exception {
+                                return service.getCustomerDTO(locatie);
                         }
 
                         @Override
                         protected void done(){
                             try {
-                                KlantenDTO result = get();
+                                CustomerDTO result = get();
                                 callback.accept(result);
                             } catch (Exception e) {
                                 exceptionConsumer.accept((Exception) e.getCause());
@@ -77,15 +77,16 @@ public class CustomerViewController {
                 worker.execute();
         }
 
-        public void getVestigingStatus(Consumer<Map<String, Boolean>> callback, Consumer<Exception> exceptionHandling) {
+        public void getBranchStatus(Consumer<Map<String, Boolean>> callback, Consumer<Exception> exceptionHandling) {
                 SwingWorker<List<Future<Boolean>>, Void> worker = new SwingWorker<>() {
                         @Override
                         protected List<Future<Boolean>> doInBackground() {
-                                ExecutorService pool = Executors.newFixedThreadPool(Math.min(12, vestigingen.size()));
+
+                                ExecutorService pool = Executors.newFixedThreadPool(Math.min(12, branches.size()));
                                 List<Future<Boolean>> futures = new ArrayList<>();
-                                for (String v : vestigingen) {
+                                for (String v : branches) {
                                         Future<Boolean> future = pool.submit(() ->
-                                                service.getVestigingStatus(v));
+                                                service.getBranchStatus(v));
                                         futures.add(future);
                                 }
                                 pool.shutdown();
@@ -98,7 +99,7 @@ public class CustomerViewController {
                                         List<Future<Boolean>> futures = get();
                                         Map<String, Boolean> nieuweMap = new TreeMap<>();
                                         for (int i = 0; i<futures.size(); i++) {
-                                                nieuweMap.put(vestigingen.get(i), futures.get(i).get());
+                                                nieuweMap.put(branches.get(i), futures.get(i).get());
                                         }
                                         callback.accept(nieuweMap);
                                 } catch (Exception e) {
@@ -118,7 +119,7 @@ public class CustomerViewController {
                 SwingWorker<Void, Void> worker = new SwingWorker<>() {
                         @Override
                         protected Void doInBackground() throws Exception {
-                                service.veranderVestigingStatus(locatie);
+                                service.changeBranchStatus(locatie);
                             return null;
                         }
 
