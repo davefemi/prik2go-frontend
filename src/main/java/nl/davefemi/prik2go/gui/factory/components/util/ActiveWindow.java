@@ -20,4 +20,8 @@ public class ActiveWindow {
         }
         activeComponent = null;
     }
+
+    public static Component getActiveComponent(){
+        return activeComponent;
+    }
 }

@@ -27,7 +27,7 @@ public class CustomerView extends JFrame implements ApiObserver {
         private final CustomerViewBuilder builder;
         private static final Dimension FRAME_SIZE = new Dimension (520, 570);
         private static final Point FRAME_LOC = new Point (100,100);
-        private static final String TITEL = "Vestigingen";
+        private static final String TITLE = "Branches";
         private String selectedLocation = null;
         private final CustomerView view = this;
 
@@ -53,7 +53,7 @@ public class CustomerView extends JFrame implements ApiObserver {
          */
         private void initialize() {
                 this.getRootPane().putClientProperty("cardName", "CustomerView");
-                this.setTitle(TITEL);
+                this.setTitle(TITLE);
                 this.setSize(FRAME_SIZE);
                 this.setLocation(FRAME_LOC);
                 this.setLayout(new BorderLayout());
@@ -67,9 +67,9 @@ public class CustomerView extends JFrame implements ApiObserver {
                                 CountDownLatch latch = new CountDownLatch(1);
                                 Boolean[] res = new Boolean[1];
                                 controller.getBranchStatus(vestigingMap ->{
-                                        view.add(builder.getVestigingPaneel(vestigingMap), BorderLayout.WEST);
+                                        view.add(builder.getBranchPanel(vestigingMap), BorderLayout.WEST);
                                         view.setJMenuBar(builder.getMenu());
-                                        view.add(builder.getKlantenPaneel(), BorderLayout.CENTER);
+                                        view.add(builder.getCustomerPanel(), BorderLayout.CENTER);
                                         res[0] = true;
                                         latch.countDown();
                                 }, exception->{res[0] = false; latch.countDown();});
@@ -88,11 +88,11 @@ public class CustomerView extends JFrame implements ApiObserver {
                                         }
                                         else {
                                                 logger.info("App init false");
-                                                builder.setVestigingError(true);
+                                                builder.setBranchError(true);
                                         }
                                 } catch (Exception e) {
                                         logger.info("App init exception");
-                                        builder.setVestigingError(true);
+                                        builder.setBranchError(true);
                                 }
                                 finally {
                                         view.revalidate();
@@ -125,7 +125,7 @@ public class CustomerView extends JFrame implements ApiObserver {
                                 this.repaint();
                         }, e -> logger.warning(e.getMessage())),
                                 e -> {logger.warning(e.getMessage());
-                                builder.displayFoutMelding(locatie,
+                                builder.displayError(locatie,
                                         e instanceof IllegalAccessException
                                                 ?"No authorisation"
                                                 :"An error occurred"
@@ -159,7 +159,7 @@ public class CustomerView extends JFrame implements ApiObserver {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                         ActiveWindow.setActiveComponent(view);
-                        updateDisplay((String) ((JButton) e.getSource()).getClientProperty("vestiging"), false);
+                        updateDisplay((String) ((JButton) e.getSource()).getClientProperty("branch"), false);
                 }
         }
         

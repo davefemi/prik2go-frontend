@@ -10,9 +10,9 @@ import javax.swing.JButton;
  */
 public class ActionButton extends JButton {
         private static final long serialVersionUID = 1L;
-        private static final String STATUSWISSEL = "statuswissel";
-        private static final String SLUITVESTIGING = "Sluit vestiging";
-        private static final String HEROPENVESTIGING = "Heropen vestiging" ;
+        private static final String CHANGE_STATUS = "changeStatus";
+        private static final String CLOSE_BRANCH = "Close branch";
+        private static final String OPEN_BRANCH = "Open branch" ;
         private static final String VISUALIZER = "Visualizer";
         
         /**
@@ -29,9 +29,9 @@ public class ActionButton extends JButton {
          * Methode die een JButton met de tekst voor de wisselfunctie terugkeert.
          * @return wisselknop
          */
-        public static ActionButton getStatusWisselKnop() {
-                ActionButton wisselKnop = new ActionButton(SLUITVESTIGING);
-                wisselKnop.putClientProperty("actie", STATUSWISSEL);
+        public static ActionButton getStatusChangeSelector() {
+                ActionButton wisselKnop = new ActionButton(CLOSE_BRANCH);
+                wisselKnop.putClientProperty("action", CHANGE_STATUS);
                 wisselKnop.setBackground(new Color(211,211,211));
                 wisselKnop.setFocusable(false);
                 wisselKnop.setVisible(false);
@@ -42,7 +42,7 @@ public class ActionButton extends JButton {
          * Methode die een JButton met de tekst voor de visualizerfunctie terugkeert.
          * @return visualizerknop
          */
-        public static ActionButton getVisualizerKnop() {
+        public static ActionButton getVisualizerSelector() {
                 ActionButton visualizerKnop = new ActionButton(VISUALIZER);
                 visualizerKnop.setBackground(new Color(211,211,211));
                 visualizerKnop.setFocusable(false);
@@ -53,9 +53,9 @@ public class ActionButton extends JButton {
          * Methode die de wisselfunctie aanpast aan de vestigingstatus
          * @param open
          */
-        public void switchActie(boolean open) {
-                if (this.getClientProperty("actie").equals(STATUSWISSEL)) {
-                        setText(open ? SLUITVESTIGING : HEROPENVESTIGING);
+        public void switchAction(boolean open) {
+                if (this.getClientProperty("action").equals(CHANGE_STATUS)) {
+                        setText(open ? CLOSE_BRANCH : OPEN_BRANCH);
                 }
         }
 }
