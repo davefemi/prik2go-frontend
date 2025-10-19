@@ -1,15 +1,14 @@
 package nl.davefemi.prik2go.client;
 
-import nl.davefemi.prik2go.authentication.Authenticator;
-import nl.davefemi.prik2go.dto.KlantenDTO;
+import nl.davefemi.prik2go.controller.AuthController;
+import nl.davefemi.prik2go.dto.CustomerDTO;
 import nl.davefemi.prik2go.dto.SessionDTO;
-import nl.davefemi.prik2go.exceptions.ApplicatieException;
+import nl.davefemi.prik2go.exceptions.ApplicationException;
 import nl.davefemi.prik2go.observer.ApiSubject;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -23,8 +22,8 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     private static final Log log = LogFactory.getLog(ApiClient.class);
     private final Timer timer = new Timer(1000, new RefreshListener());
     private final RestTemplate restTemplate;
-    private static final String URL = "https://prik2go-backend.onrender.com/private/locations/%s";
-//    private static final String URL = "http://localhost:8080/private/locations/%s";
+//    private static final String BASE_URL = "https://prik2go-backend.onrender.com/private/locations/%s";
+    private static final String BASE_URL = "http://localhost:8080/private/locations/%s";
 
     public ApiClient(RestTemplate restTemplate){
         this.restTemplate = restTemplate;
@@ -32,7 +31,7 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     }
 
     private void init(){
-        startTimer();
+//        startTimer();
     }
 
     private void startTimer(){
@@ -45,12 +44,12 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
 
     private synchronized HttpEntity<String> getHttpRequest() throws IllegalAccessException {
         try {
-            Authenticator.validateSession();
-            SessionDTO session = Authenticator.getSession();
+            AuthController.validateSession();
+            SessionDTO session = AuthController.getSession();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("Authorization", "Bearer " + session.getToken());
-            return new HttpEntity<>(Authenticator.getSession().getUser().toString(), headers);
+            return new HttpEntity<>(AuthController.getSession().getUser().toString(), headers);
         }
         catch (Exception e){
             throw new IllegalAccessException("No authorisation");
@@ -58,59 +57,59 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     }
 
     @Override
-    public ResponseEntity<List> getBranches() throws IllegalAccessException, ApplicatieException {
+    public ResponseEntity<List> getBranches() throws IllegalAccessException, ApplicationException {
         try {
-            return restTemplate.exchange(String.format(URL, "get-branches"),
+            return restTemplate.exchange(String.format(BASE_URL, "get-branches"),
                     HttpMethod.POST,
                     getHttpRequest(),
                     List.class);
         } catch (HttpClientErrorException e) {
-            throw new ApplicatieException(e.getResponseBodyAsString());
+            throw new ApplicationException(e.getResponseBodyAsString());
         }
         catch (RestClientException e){
-            throw new ApplicatieException(e.getCause().getMessage());
+            throw new ApplicationException(e.getCause().getMessage());
         }
     }
 
     @Override
-    public ResponseEntity<KlantenDTO> getCustomers(String location) throws IllegalAccessException, ApplicatieException {
-        return restTemplate.exchange(String.format(URL, "get-customers?location=" + location),
+    public ResponseEntity<CustomerDTO> getCustomers(String location) throws IllegalAccessException {
+        return restTemplate.exchange(String.format(BASE_URL, "get-customers?location=" + location),
                         HttpMethod.POST,
                         getHttpRequest(),
-                        KlantenDTO.class);
+                        CustomerDTO.class);
     }
 
     @Override
-    public ResponseEntity<Boolean> getBranchStatus(String location) throws ApplicatieException, IllegalAccessException {
+    public ResponseEntity<Boolean> getBranchStatus(String location) throws ApplicationException, IllegalAccessException {
         try {
-            return restTemplate.exchange(String.format(URL, "get-status?location=" + location),
+            return restTemplate.exchange(String.format(BASE_URL, "get-status?location=" + location),
                     HttpMethod.POST,
                     getHttpRequest(),
                     Boolean.class);
         }
         catch (HttpClientErrorException e){
-            throw new ApplicatieException(e.getResponseBodyAsString());
+            throw new ApplicationException(e.getResponseBodyAsString());
         }
     }
 
     @Override
-    public void changeBranchStatus(String location) throws ApplicatieException, IllegalAccessException {
+    public void changeBranchStatus(String location) throws ApplicationException, IllegalAccessException {
         if (SwingUtilities.isEventDispatchThread()) {
             log.warn("getHttpRequest called on EDT — may block UI");
         }
         try {
-            restTemplate.exchange(String.format(URL, "change-status?location=" + location),
+            restTemplate.exchange(String.format(BASE_URL, "change-status?location=" + location),
                     HttpMethod.PUT,
                     getHttpRequest(),
                     Void.class);
             notifyObservers();
         } catch (HttpClientErrorException e) {
-            throw new ApplicatieException(e.getResponseBodyAsString().isBlank() ? "Unknown error" : e.getResponseBodyAsString());
+            throw new ApplicationException(e.getResponseBodyAsString().isBlank() ? "Unknown error" : e.getResponseBodyAsString());
         }
     }
 
 
-    private class RefreshListener implements ActionListener{
+    private static class RefreshListener implements ActionListener{
 
         @Override
         public void actionPerformed(ActionEvent e) {
