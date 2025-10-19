@@ -1,19 +1,18 @@
 package nl.davefemi.prik2go.service;
 
-import nl.davefemi.prik2go.dto.KlantenDTO;
-import nl.davefemi.prik2go.exceptions.ApplicatieException;
-import nl.davefemi.prik2go.exceptions.VestigingException;
+import nl.davefemi.prik2go.dto.CustomerDTO;
+import nl.davefemi.prik2go.exceptions.ApplicationException;
+import nl.davefemi.prik2go.exceptions.BranchException;
 
 import java.util.List;
-import java.util.Map;
 
 public interface DataServiceInterface {
 
-    List<String> getVestigingen() throws ApplicatieException, IllegalAccessException;
+    List<String> getBranches() throws ApplicationException, IllegalAccessException;
 
-    KlantenDTO getKlantenDTO(String locatie) throws IllegalAccessException, ApplicatieException;
+    CustomerDTO getCustomerDTO(String locatie) throws IllegalAccessException, ApplicationException;
 
-    boolean getVestigingStatus(String locatie) throws ApplicatieException, IllegalAccessException;
+    boolean getBranchStatus(String locatie) throws ApplicationException, IllegalAccessException;
 
-    void veranderVestigingStatus(String locatie) throws VestigingException, ApplicatieException, IllegalAccessException;
+    void changeBranchStatus(String locatie) throws BranchException, ApplicationException, IllegalAccessException;
 }

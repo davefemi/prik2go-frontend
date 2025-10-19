@@ -4,8 +4,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
-import nl.davefemi.prik2go.exceptions.ApplicatieException;
-import nl.davefemi.prik2go.exceptions.VestigingException;
+import nl.davefemi.prik2go.exceptions.ApplicationException;
 import nl.davefemi.prik2go.service.DataServiceInterface;
 
 import javax.swing.*;
@@ -18,7 +17,7 @@ public class VisualizerController implements VisualizerControllerInterface {
         private final DataServiceInterface service;
         private List<String> vestigingen;
 
-        public VisualizerController(DataServiceInterface service) throws ApplicatieException, IllegalAccessException {
+        public VisualizerController(DataServiceInterface service) throws ApplicationException, IllegalAccessException {
                  this.service = service;
                  initVestigingen();
         }
@@ -26,19 +25,18 @@ public class VisualizerController implements VisualizerControllerInterface {
         /**
         * Verzorgt de initialisatie van de Vestiging-arraylist.
         */
-        private void initVestigingen() throws ApplicatieException, IllegalAccessException {
-                vestigingen = service.getVestigingen();
+        private void initVestigingen() throws ApplicationException, IllegalAccessException {
+                vestigingen = service.getBranches();
         }
         /**
          * Sluit of opent een vestiging als er op een bar is geklikt in de view.
-         * @throws VestigingException 
          */
         @Override
         public void barClicked(String locatie, Consumer<Exception> exceptionHandler) {
-                SwingWorker worker = new SwingWorker<Void, Void>() {
+                SwingWorker<Void, Void> worker = new SwingWorker<>() {
                         @Override
                         protected Void doInBackground() throws Exception {
-                                service.veranderVestigingStatus(locatie);
+                                service.changeBranchStatus(locatie);
                                 return null;
                         }
 
@@ -61,14 +59,14 @@ public class VisualizerController implements VisualizerControllerInterface {
          */
         @Override
         public void getBarInfo(Consumer<Map<String, Integer>> callback, Consumer<Exception> exceptionHandling) {
-                SwingWorker worker = new SwingWorker<List<Future<Integer>>, Void>() {
+                SwingWorker<List<Future<Integer>>, Void> worker = new SwingWorker<>() {
                         @Override
-                        protected List<Future<Integer>> doInBackground() throws Exception {
+                        protected List<Future<Integer>> doInBackground() {
                                 ExecutorService pool = Executors.newFixedThreadPool(Math.min(12, vestigingen.size()));
-                                List<Future<Integer>> futures = new ArrayList<Future<Integer>>();
+                                List<Future<Integer>> futures = new ArrayList<>();
                                 for (String v : vestigingen) {
-                                        Future future = pool.submit(() ->
-                                                service.getKlantenDTO(v).getAantalKlanten());
+                                        Future<Integer> future = pool.submit(() ->
+                                                service.getCustomerDTO(v).getAantalKlanten());
                                         futures.add(future);
                                 }
                                 pool.shutdown();
@@ -78,8 +76,8 @@ public class VisualizerController implements VisualizerControllerInterface {
                         @Override
                         protected void done() {
                                 try {
-                                        List<Future<Integer>> futures = (List<Future<Integer>>) get();
-                                        Map<String, Integer> nieuweMap = new TreeMap<String, Integer>();
+                                        List<Future<Integer>> futures = get();
+                                        Map<String, Integer> nieuweMap = new TreeMap<>();
                                         for (int i = 0; i<futures.size(); i++) {
                                                 nieuweMap.put(vestigingen.get(i), futures.get(i).get());
                                         }
