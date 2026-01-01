@@ -18,8 +18,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 public class AuthClient {
     private static final RestTemplate restTemplate = new RestTemplate();
-    private static final String BASE_URL = "https://prik2go-backend.onrender.com/%s";
+//    private static final String BASE_URL = "https://prik2go-backend.onrender.com/%s";
 //    private static final String BASE_URL = "http://localhost:8080/%s";
+    private static final String BASE_URL = "https://prik2go.mangobeach-d8e4eeb8.germanywestcentral.azurecontainerapps.io/%s";
     private static final String LINK_GOOGLE = "private/oauth2/request/start";
     private static final String LOGIN_GOOGLE = "oauth2/request/start";
 
