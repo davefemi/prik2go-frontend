@@ -18,10 +18,11 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 public class AuthClient {
     private static final RestTemplate restTemplate = new RestTemplate();
-    private static final String BASE_URL = "https://prik2go-backend.onrender.com/%s";
 //    private static final String BASE_URL = "http://localhost:8080/%s";
-    private static final String LINK_GOOGLE = "private/oauth2/request/start";
-    private static final String LOGIN_GOOGLE = "oauth2/request/start";
+//    private static final String BASE_URL = "https://prik2go.mangobeach-d8e4eeb8.germanywestcentral.azurecontainerapps.io/%s";
+    private static final String BASE_URL = "https://prik2go.com/%s";
+    private static final String LINK_OAUTH_USER = "private/oauth2/request/start?provider=%s";
+    private static final String LOGIN_OAUTH_USER = "oauth2/request/start?provider=%s";
 
     @Bean
     public ObjectMapper objectMapper() {
@@ -37,14 +38,6 @@ public class AuthClient {
         headers.setBearerAuth(session.getToken());
         return new HttpEntity<>(AuthController.getSession().getUser().toString(), headers);
     }
-
-    private static synchronized HttpEntity<String> getOauth2HttpRequest()  {
-        SessionDTO session = AuthController.getSession();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(session.getToken());
-        return new HttpEntity<>(AuthController.getSession().getUser().toString(), headers);
-    }
-
 
     public static ResponseEntity<SessionDTO> loginUser(UserDTO user) throws ApplicationException {
         try {
@@ -79,27 +72,31 @@ public class AuthClient {
         }
     }
 
-    public static boolean linkGoogleAccount() throws ApplicationException {
+    public static boolean linkOAuth2User(String provider) throws ApplicationException {
         try {
+            String path = String.format(LINK_OAUTH_USER, provider);
             RequestEntity<UserDTO> httpRequest = new RequestEntity<>(
-                    getOauth2HttpRequest().getHeaders(),
+                    getHttpRequest().getHeaders(),
                     HttpMethod.GET,
-                    new URI(String.format(BASE_URL, LINK_GOOGLE)));
+                    new URI(String.format(BASE_URL, path)));
             OAuthRequestDTO oAuthRequestDTO = oAuth2Login(httpRequest);
-            if (isOAuthUserAuthenticated(oAuthRequestDTO)){
+            if (isOAuthUserAuthenticated(oAuthRequestDTO)) {
                 return true;
+            } else {
+                throw new ApplicationException("Oauth authentication failed");
             }
-        } catch (Exception e) {
+        } catch (URISyntaxException e) {
             throw new ApplicationException(e.getMessage());
         }
-        return false;
     }
 
-    public static SessionDTO setLoginGoogle() throws ApplicationException {
+
+    public static SessionDTO loginOAuth2User(String provider) throws ApplicationException {
         try {
+            String path = String.format(LOGIN_OAUTH_USER, provider);
             RequestEntity<UserDTO> httpRequest = new RequestEntity<>(
                     HttpMethod.GET,
-                    new URI(String.format(BASE_URL, LOGIN_GOOGLE)));
+                    new URI(String.format(BASE_URL, path)));
             OAuthRequestDTO oAuthRequestDTO = oAuth2Login(httpRequest);
             if (isOAuthUserAuthenticated(oAuthRequestDTO)) {
                 return getOauthSession(oAuthRequestDTO).getBody();

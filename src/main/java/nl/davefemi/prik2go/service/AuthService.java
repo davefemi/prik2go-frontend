@@ -20,11 +20,11 @@ public class AuthService {
         return AuthClient.changePassword(user).getBody();
     }
 
-    public boolean linkGoogleAccount() throws ApplicationException {
-        return AuthClient.linkGoogleAccount();
+    public boolean linkOAuth2User(String provider) throws ApplicationException {
+        return AuthClient.linkOAuth2User(provider);
     }
 
-    public SessionDTO loginGoogleAccount() throws ApplicationException {
-        return AuthClient.setLoginGoogle();
+    public SessionDTO loginOAuth2User(String provider) throws ApplicationException {
+        return AuthClient.loginOAuth2User(provider);
     }
 }
