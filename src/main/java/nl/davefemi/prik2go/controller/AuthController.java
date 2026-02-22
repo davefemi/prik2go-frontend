@@ -98,19 +98,23 @@ public class AuthController {
             return true;
     }
 
-    public static boolean linkGoogleAccount() throws IllegalAccessException, ApplicationException {
-        if (!isSessionValid()){
-            validateSession();
-        }
-        try {
-            return authService.linkGoogleAccount();
-        } catch (ApplicationException e) {
-            throw new ApplicationException("Failed to Authenticate");
-        }
+//    public static boolean linkGoogleAccount() throws IllegalAccessException, ApplicationException {
+//        if (!isSessionValid()){
+//            validateSession();
+//        }
+//        try {
+//            return authService.linkGoogleAccount();
+//        } catch (ApplicationException e) {
+//            throw new ApplicationException("Failed to Authenticate");
+//        }
+//    }
+
+    public static boolean linkOAuth2User(String provider) throws ApplicationException{
+        return authService.linkOAuth2User(provider);
     }
 
-    public static boolean loginWithGoogle() throws ApplicationException {
-        session = authService.loginGoogleAccount();
+    public static boolean loginOAuth2User(String provider) throws ApplicationException {
+        session = authService.loginOAuth2User(provider);
         if (isSessionValid()){
             return true;
         }

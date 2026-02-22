@@ -71,7 +71,7 @@ public class LoginForm extends JPanel {
                     @Override
                     protected Boolean doInBackground() throws Exception {
                         try {
-                            if (AuthController.loginWithGoogle()) {
+                            if (AuthController.loginOAuth2User("google")) {
                                 return true;
                             }
                         } catch (ApplicationException ex) {
