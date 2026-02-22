@@ -30,7 +30,8 @@ public class Menu extends JMenuBar {
             account.add(getLogin());
             account.add(getLogout());
             account.add(getChangePassword());
-            account.add(getLinkAccount());
+            account.add(getLinkAccount("Google"));
+            account.add(getLinkAccount("Outlook"));
         }
         return account;
     }
@@ -77,15 +78,15 @@ public class Menu extends JMenuBar {
         return changePassword;
     }
 
-    private JMenuItem getLinkAccount(){
-        JMenuItem linkAccount = new JMenuItem("Link Google-Account");
+    private JMenuItem getLinkAccount(String provider){
+        JMenuItem linkAccount = new JMenuItem("Link " + provider +"-Account");
         linkAccount.addActionListener(e -> {
             JDialog loading = LoadingBar.getLoadingDialog(SwingUtilities.getWindowAncestor(menu));
             SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
                 @Override
                 protected Boolean doInBackground() throws Exception {
                     try {
-                        if (AuthController.loginWithGoogle()) {
+                        if (AuthController.linkOAuth2User(provider)) {
                             return true;
                         }
                     } catch (ApplicationException ex) {
