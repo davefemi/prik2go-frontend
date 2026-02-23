@@ -24,11 +24,11 @@ public class LoginForm extends JPanel {
     private final JLabel PASSWORD = new JLabel("Password", JLabel.TRAILING);
     private JTextField emailField = new JTextField(20);
     private JPasswordField passwordField = new JPasswordField(20);
-    private JLabel googleField = new JLabel("Sign in with Google");
     private final LoginForm panel = this;
     private JOptionPane pane;
     private final String[] options = {"OK", "Cancel"};
     private JDialog dialog;
+    private JPanel oAuthPanel = new JPanel();
 
     public LoginForm() {
         super();
@@ -57,28 +57,31 @@ public class LoginForm extends JPanel {
                 5, 5,
                 5, 5);
         this.panel.add(panel, BorderLayout.CENTER);
-        addGoogleField();
+        this.panel.add(oAuthPanel);
+        addOAuthField("Outlook");
+        addOAuthField("Google");
     }
 
-    private void addGoogleField(){
-        googleField.setHorizontalAlignment(SwingConstants.CENTER);
-        googleField.addMouseListener(new MouseAdapter() {
+    private void addOAuthField(String provider){
+        JLabel providerField = new JLabel("Sign in with " + provider +"  ");
+        providerField.setHorizontalAlignment(SwingConstants.CENTER);
+        providerField.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 JDialog loading = LoadingBar.getLoadingDialog(dialog);
-                googleField.setEnabled(false);
+                providerField.setEnabled(false);
                 SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
                     @Override
                     protected Boolean doInBackground() throws Exception {
                         try {
-                            if (AuthController.loginOAuth2User("google")) {
+                            if (AuthController.loginOAuth2User(provider)) {
                                 return true;
                             }
                         } catch (ApplicationException ex) {
                             SwingBringToFront.bringPanelToFront(panel);
                             loading.setVisible(false);
                             MessageDialog.getErrorDialog(panel, ex.getMessage());
-                            googleField.setEnabled(true);
+                            providerField.setEnabled(true);
                         }
                         return false;
                     }
@@ -93,11 +96,11 @@ public class LoginForm extends JPanel {
                             }
                         } catch (InterruptedException ex) {
                             loading.setVisible(false);
-                            googleField.setEnabled(true);
+                            providerField.setEnabled(true);
                             throw new RuntimeException(ex);
                         } catch (ExecutionException ex) {
                             loading.setVisible(false);
-                            googleField.setEnabled(true);
+                            providerField.setEnabled(true);
                             MessageDialog.getErrorDialog(panel, ex.getMessage());
                         }
                     }
@@ -106,7 +109,7 @@ public class LoginForm extends JPanel {
                 loading.setVisible(true);
                 }
         });
-        this.panel.add(googleField);
+        oAuthPanel.add(providerField);
     }
 
     public UserDTO getUserLogin(UUID user) {
