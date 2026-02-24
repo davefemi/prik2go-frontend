@@ -1,5 +1,6 @@
 package nl.davefemi.prik2go.client;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.davefemi.prik2go.controller.AuthController;
 import nl.davefemi.prik2go.dto.OAuthRequestDTO;
@@ -17,6 +18,7 @@ import java.net.URISyntaxException;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 public class AuthClient {
+    private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final RestTemplate restTemplate = new RestTemplate();
 //    private static final String BASE_URL = "http://localhost:8080/%s";
 //    private static final String BASE_URL = "https://prik2go.mangobeach-d8e4eeb8.germanywestcentral.azurecontainerapps.io/%s";
@@ -48,7 +50,16 @@ public class AuthClient {
                     UserDTO.class);
             return restTemplate.exchange(httpRequest, SessionDTO.class);
         } catch (HttpClientErrorException e) {
-            throw new ApplicationException("Unauthorized: login failed");
+            if (MediaType.APPLICATION_PROBLEM_JSON.equals(e.getResponseHeaders().getContentType())){
+                ProblemDetail pd;
+                try {
+                    pd = objectMapper.readValue(e.getResponseBodyAsString(), ProblemDetail.class);
+                } catch (JsonProcessingException ex) {
+                    throw new RuntimeException(ex);
+                }
+                throw new ApplicationException(pd.getDetail());
+            }
+            throw new ApplicationException(e.getResponseBodyAsString());
         } catch (RestClientException e) {
             throw new ApplicationException("Network is unreachable");
         } catch (Exception e) {
@@ -66,7 +77,16 @@ public class AuthClient {
                     UserDTO.class);
             return restTemplate.exchange(httpRequest, SessionDTO.class);
         } catch (HttpClientErrorException e) {
-            throw new ApplicationException(e.getResponseBodyAsString().isBlank() ? "Authentication failed" : e.getResponseBodyAsString());
+            if (MediaType.APPLICATION_PROBLEM_JSON.equals(e.getResponseHeaders().getContentType())){
+                ProblemDetail pd;
+                try {
+                    pd = objectMapper.readValue(e.getResponseBodyAsString(), ProblemDetail.class);
+                } catch (JsonProcessingException ex) {
+                    throw new RuntimeException(ex);
+                }
+                throw new ApplicationException(pd.getDetail());
+            }
+            throw new ApplicationException(e.getResponseBodyAsString());
         } catch (Exception e) {
             throw new ApplicationException(e.getMessage());
         }
@@ -114,7 +134,16 @@ public class AuthClient {
             Desktop.getDesktop().browse(URI.create(OAuthRequestDTO.getUrl()));
             return OAuthRequestDTO;
         } catch (HttpClientErrorException e) {
-            throw new ApplicationException("Unauthorized: login failed");
+            if (MediaType.APPLICATION_PROBLEM_JSON.equals(e.getResponseHeaders().getContentType())){
+                ProblemDetail pd;
+                try {
+                    pd = objectMapper.readValue(e.getResponseBodyAsString(), ProblemDetail.class);
+                } catch (JsonProcessingException ex) {
+                    throw new RuntimeException(ex);
+                }
+                throw new ApplicationException(pd.getDetail());
+            }
+            throw new ApplicationException(e.getResponseBodyAsString());
         } catch (RestClientException e) {
             throw new ApplicationException("Network is unreachable");
         } catch (Exception e) {
@@ -137,7 +166,16 @@ public class AuthClient {
             }
             return false;
         } catch (HttpClientErrorException e) {
-            throw new ApplicationException("Unauthorized: login failed");
+            if (MediaType.APPLICATION_PROBLEM_JSON.equals(e.getResponseHeaders().getContentType())){
+                ProblemDetail pd;
+                try {
+                    pd = objectMapper.readValue(e.getResponseBodyAsString(), ProblemDetail.class);
+                } catch (JsonProcessingException ex) {
+                    throw new RuntimeException(ex);
+                }
+                throw new ApplicationException(pd.getDetail());
+            }
+            throw new ApplicationException(e.getResponseBodyAsString());
         } catch (RestClientException e) {
             throw new ApplicationException("Network is unreachable");
         } catch (Exception e) {
@@ -154,7 +192,16 @@ public class AuthClient {
                     OAuthRequestDTO.class);
             return restTemplate.exchange(httpRequest, SessionDTO.class);
         } catch (HttpClientErrorException e) {
-            throw new ApplicationException("Unauthorized: login failed");
+            if (MediaType.APPLICATION_PROBLEM_JSON.equals(e.getResponseHeaders().getContentType())){
+                ProblemDetail pd;
+                try {
+                    pd = objectMapper.readValue(e.getResponseBodyAsString(), ProblemDetail.class);
+                } catch (JsonProcessingException ex) {
+                    throw new RuntimeException(ex);
+                }
+                throw new ApplicationException(pd.getDetail());
+            }
+            throw new ApplicationException(e.getResponseBodyAsString());
         } catch (RestClientException e) {
             throw new ApplicationException("Network is unreachable");
         } catch (Exception e) {
