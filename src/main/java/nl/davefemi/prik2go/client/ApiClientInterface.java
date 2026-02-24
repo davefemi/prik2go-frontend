@@ -9,11 +9,11 @@ import java.util.List;
 
 public interface ApiClientInterface {
 
-    public ResponseEntity<List> getBranches() throws ApplicationException, IllegalAccessException;
+    ResponseEntity<List> getBranches() throws ApplicationException, IllegalAccessException;
 
-    public ResponseEntity<CustomerDTO> getCustomers(String location) throws IllegalAccessException, ApplicationException;
+    ResponseEntity<CustomerDTO> getCustomers(String location) throws IllegalAccessException, ApplicationException;
 
-    public ResponseEntity<Boolean> getBranchStatus(String location) throws ApplicationException, IllegalAccessException;
+    ResponseEntity<Boolean> getBranchStatus(String location) throws ApplicationException, IllegalAccessException;
 
-    public void changeBranchStatus(String location) throws ApplicationException, BranchException, IllegalAccessException;
+    void changeBranchStatus(String location) throws ApplicationException, BranchException, IllegalAccessException;
 }
