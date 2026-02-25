@@ -26,9 +26,9 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
 //    private static final String BASE_URL = "https://prik2go-backend.onrender.com/private/locations/%s";
-//    private static final String BASE_URL = "http://localhost:8080/private/locations/%s";
+    private static final String BASE_URL = "http://localhost:8080/private/locations/%s";
 //    private static final String BASE_URL = "https://prik2go.mangobeach-d8e4eeb8.germanywestcentral.azurecontainerapps.io/private/locations/%s";
-    private static final String BASE_URL = "https://prik2go.com/private/locations/%s";
+//    private static final String BASE_URL = "https://prik2go.com/private/locations/%s";
 
 
     public ApiClient(RestTemplate restTemplate){

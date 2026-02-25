@@ -13,6 +13,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import java.awt.*;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -20,9 +21,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 public class AuthClient {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final RestTemplate restTemplate = new RestTemplate();
-//    private static final String BASE_URL = "http://localhost:8080/%s";
+    private static final String BASE_URL = "http://localhost:8080/%s";
 //    private static final String BASE_URL = "https://prik2go.mangobeach-d8e4eeb8.germanywestcentral.azurecontainerapps.io/%s";
-    private static final String BASE_URL = "https://prik2go.com/%s";
+//    private static final String BASE_URL = "https://prik2go.com/%s";
     private static final String LINK_OAUTH_USER = "private/oauth2/request/start?provider=%s";
     private static final String LOGIN_OAUTH_USER = "oauth2/request/start?provider=%s";
 
@@ -33,7 +34,7 @@ public class AuthClient {
         return mapper;
     }
 
-    private static synchronized HttpEntity<String> getHttpRequest()  {
+    private static synchronized HttpEntity<String> getHttpRequest() throws ApplicationException {
         SessionDTO session = AuthController.getSession();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -146,8 +147,8 @@ public class AuthClient {
             throw new ApplicationException(e.getResponseBodyAsString());
         } catch (RestClientException e) {
             throw new ApplicationException("Network is unreachable");
-        } catch (Exception e) {
-            throw new ApplicationException(e.getCause().getMessage());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
