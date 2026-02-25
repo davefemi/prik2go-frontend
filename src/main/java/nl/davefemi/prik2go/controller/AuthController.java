@@ -26,7 +26,10 @@ public class AuthController {
         return session != null && session.getExpiresAt().isAfter(Instant.now().plusSeconds(30));
     }
 
-    public static synchronized SessionDTO getSession() {
+    public static synchronized SessionDTO getSession() throws ApplicationException {
+        if (session == null){
+            throw new ApplicationException("Session has expired. Please re-authenticate");
+        }
         return session;
     }
 

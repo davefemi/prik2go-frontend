@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+echo "THIS SCRIPT WILL REMOVE prik2go-frontend-1.0-SNAPSHOT.jar, Prik2Go.app and Prik2Go.dmg"
+echo "To continue press enter..."
+
+read -r
+
+rm -rf ../Prik2Go/Prik2Go.app
+rm ../Prik2Go/Prik2Go.dmg
+
+echo [Enter app version]:  
+
+read -r version
+
+
+echo [Initializing build Prik2Go-$version...]
+echo [Building app-image...]
+
+rm ../Prik2Go/prik2go-frontend-1.0-SNAPSHOT.jar
+mvn clean package
+mv target/prik2go-frontend-1.0-SNAPSHOT.jar ../Prik2Go
+
+jpackage \
+  --type app-image \
+  --name Prik2Go \
+  --input ../Prik2Go \
+  --main-jar prik2go-frontend-1.0-SNAPSHOT.jar \
+  --icon icon.icns \
+  --app-version $version
+
+echo [app.image built successfully!]
+echo [Building jpackage...]
+
+jpackage \
+  --type dmg \
+  --name Prik2Go \
+  --input ../Prik2Go \
+  --main-jar prik2go-frontend-1.0-SNAPSHOT.jar \
+  --icon icon.icns \
+  --app-version $version
+
+echo [jpackage built successfully!]
+
+mv Prik2Go.app ../Prik2Go
+mv Prik2Go-$version.dmg ../Prik2Go/Prik2Go.dmg
+
+echo [Completed building Prik2Go-$version at: $(date)]
