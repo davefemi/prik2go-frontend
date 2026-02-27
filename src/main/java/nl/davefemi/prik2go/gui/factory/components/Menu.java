@@ -2,7 +2,6 @@ package nl.davefemi.prik2go.gui.factory.components;
 
 import nl.davefemi.prik2go.controller.AuthController;
 import nl.davefemi.prik2go.exceptions.ApplicationException;
-import nl.davefemi.prik2go.gui.factory.components.authentication.ChangeForm;
 import nl.davefemi.prik2go.gui.factory.components.util.MessageDialog;
 import nl.davefemi.prik2go.gui.factory.components.util.LoadingBar;
 import nl.davefemi.prik2go.gui.factory.components.util.SwingBringToFront;
@@ -13,7 +12,7 @@ import java.util.concurrent.ExecutionException;
 
 public class Menu extends JMenuBar {
     private JMenu account = null;
-    private Menu menu = this;
+    private final Menu menu = this;
 
     public Menu(){
         super();
@@ -32,6 +31,7 @@ public class Menu extends JMenuBar {
             account.add(getChangePassword());
             account.add(getLinkAccount("Google"));
             account.add(getLinkAccount("Outlook"));
+            account.add(getUnlinkAccount());
         }
         return account;
     }
@@ -64,7 +64,6 @@ public class Menu extends JMenuBar {
     private JMenuItem getChangePassword(){
         JMenuItem changePassword = new JMenuItem("Change password");
         changePassword.addActionListener(e ->{
-            ChangeForm form = new ChangeForm();
             try {
                 if (AuthController.changePassword()) {
                     MessageDialog.getInfoDialog(null, "Password successfully changed");
@@ -84,7 +83,7 @@ public class Menu extends JMenuBar {
             JDialog loading = LoadingBar.getLoadingDialog(SwingUtilities.getWindowAncestor(menu));
             SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
                 @Override
-                protected Boolean doInBackground() throws Exception {
+                protected Boolean doInBackground() {
                     try {
                         if (AuthController.linkOAuth2User(provider)) {
                             return true;
@@ -117,6 +116,30 @@ public class Menu extends JMenuBar {
             };
             worker.execute();
             loading.setVisible(true);
+        });
+        return linkAccount;
+    }
+
+    private JMenuItem getUnlinkAccount(){
+        JMenuItem linkAccount = new JMenuItem("Unlink external account");
+        linkAccount.addActionListener(e -> {
+            JDialog loading = LoadingBar.getLoadingDialog(SwingUtilities.getWindowAncestor(menu));
+            try {
+                if (AuthController.unlinkOAuth2User()){
+                    loading.setVisible(false);
+                    SwingBringToFront.bringPanelToFront(menu);
+                    MessageDialog.getInfoDialog(getParent(), "External account has been removed");
+                }
+                else{
+                    loading.setVisible(false);
+                    SwingBringToFront.bringPanelToFront(menu);
+                    MessageDialog.getInfoDialog(getParent(), "External account has not been removed");
+                }
+            } catch (ApplicationException ex) {
+                SwingBringToFront.bringPanelToFront(menu);
+                loading.setVisible(false);
+                MessageDialog.getErrorDialog(SwingUtilities.getWindowAncestor(menu), ex.getMessage());
+            }
         });
         return linkAccount;
     }
