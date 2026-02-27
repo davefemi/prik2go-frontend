@@ -1,6 +1,5 @@
 package nl.davefemi.prik2go.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.davefemi.prik2go.controller.AuthController;
 import nl.davefemi.prik2go.dto.OAuthRequestDTO;
@@ -19,7 +18,6 @@ import java.net.URISyntaxException;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 public class AuthClient {
-    private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final RestTemplate restTemplate = new RestTemplate();
 //    private static final String BASE_URL = "http://localhost:8080/%s";
 //    private static final String BASE_URL = "https://prik2go.mangobeach-d8e4eeb8.germanywestcentral.azurecontainerapps.io/%s";
@@ -51,24 +49,16 @@ public class AuthClient {
                     UserDTO.class);
             return restTemplate.exchange(httpRequest, SessionDTO.class);
         } catch (HttpClientErrorException e) {
-            if (MediaType.APPLICATION_PROBLEM_JSON.equals(e.getResponseHeaders().getContentType())){
-                ProblemDetail pd;
-                try {
-                    pd = objectMapper.readValue(e.getResponseBodyAsString(), ProblemDetail.class);
-                } catch (JsonProcessingException ex) {
-                    throw new RuntimeException(ex);
-                }
-                throw new ApplicationException(pd.getDetail());
-            }
-            throw new ApplicationException(e.getResponseBodyAsString());
+            ExceptionHandler.handleHttpClientErrorException(e);
         } catch (RestClientException e) {
             throw new ApplicationException("Network is unreachable");
         } catch (Exception e) {
             throw new ApplicationException(e.getCause().getMessage());
         }
+        return null;
     }
 
-    public static ResponseEntity<SessionDTO> changePassword(UserDTO user) throws ApplicationException {
+    public static void changePassword(UserDTO user) throws ApplicationException {
         try {
             RequestEntity<UserDTO> httpRequest = new RequestEntity<>(
                     user,
@@ -76,18 +66,9 @@ public class AuthClient {
                     HttpMethod.POST,
                     new URI(String.format(BASE_URL, "auth/change-password")),
                     UserDTO.class);
-            return restTemplate.exchange(httpRequest, SessionDTO.class);
+            restTemplate.exchange(httpRequest, SessionDTO.class);
         } catch (HttpClientErrorException e) {
-            if (MediaType.APPLICATION_PROBLEM_JSON.equals(e.getResponseHeaders().getContentType())){
-                ProblemDetail pd;
-                try {
-                    pd = objectMapper.readValue(e.getResponseBodyAsString(), ProblemDetail.class);
-                } catch (JsonProcessingException ex) {
-                    throw new RuntimeException(ex);
-                }
-                throw new ApplicationException(pd.getDetail());
-            }
-            throw new ApplicationException(e.getResponseBodyAsString());
+            ExceptionHandler.handleHttpClientErrorException(e);
         } catch (Exception e) {
             throw new ApplicationException(e.getMessage());
         }
@@ -135,21 +116,13 @@ public class AuthClient {
             Desktop.getDesktop().browse(URI.create(OAuthRequestDTO.getUrl()));
             return OAuthRequestDTO;
         } catch (HttpClientErrorException e) {
-            if (MediaType.APPLICATION_PROBLEM_JSON.equals(e.getResponseHeaders().getContentType())){
-                ProblemDetail pd;
-                try {
-                    pd = objectMapper.readValue(e.getResponseBodyAsString(), ProblemDetail.class);
-                } catch (JsonProcessingException ex) {
-                    throw new RuntimeException(ex);
-                }
-                throw new ApplicationException(pd.getDetail());
-            }
-            throw new ApplicationException(e.getResponseBodyAsString());
+            ExceptionHandler.handleHttpClientErrorException(e);
         } catch (RestClientException e) {
             throw new ApplicationException("Network is unreachable");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        return null;
     }
 
     private static boolean isOAuthUserAuthenticated(OAuthRequestDTO oAuthRequest) throws ApplicationException {
@@ -167,21 +140,13 @@ public class AuthClient {
             }
             return false;
         } catch (HttpClientErrorException e) {
-            if (MediaType.APPLICATION_PROBLEM_JSON.equals(e.getResponseHeaders().getContentType())){
-                ProblemDetail pd;
-                try {
-                    pd = objectMapper.readValue(e.getResponseBodyAsString(), ProblemDetail.class);
-                } catch (JsonProcessingException ex) {
-                    throw new RuntimeException(ex);
-                }
-                throw new ApplicationException(pd.getDetail());
-            }
-            throw new ApplicationException(e.getResponseBodyAsString());
+            ExceptionHandler.handleHttpClientErrorException(e);
         } catch (RestClientException e) {
             throw new ApplicationException("Network is unreachable");
         } catch (Exception e) {
             throw new ApplicationException(e.getCause().getMessage());
         }
+        return false;
     }
 
     private static ResponseEntity<SessionDTO> getOauthSession(OAuthRequestDTO oAuthRequest) throws ApplicationException {
@@ -193,20 +158,27 @@ public class AuthClient {
                     OAuthRequestDTO.class);
             return restTemplate.exchange(httpRequest, SessionDTO.class);
         } catch (HttpClientErrorException e) {
-            if (MediaType.APPLICATION_PROBLEM_JSON.equals(e.getResponseHeaders().getContentType())){
-                ProblemDetail pd;
-                try {
-                    pd = objectMapper.readValue(e.getResponseBodyAsString(), ProblemDetail.class);
-                } catch (JsonProcessingException ex) {
-                    throw new RuntimeException(ex);
-                }
-                throw new ApplicationException(pd.getDetail());
-            }
-            throw new ApplicationException(e.getResponseBodyAsString());
+            ExceptionHandler.handleHttpClientErrorException(e);
         } catch (RestClientException e) {
             throw new ApplicationException("Network is unreachable");
         } catch (Exception e) {
             throw new ApplicationException(e.getCause().getMessage());
         }
+        return null;
     }
+
+    public static boolean unlinkOAuth2User() throws ApplicationException {
+        try {
+            restTemplate.exchange(String.format(BASE_URL, "private/oauth2/revoke"),
+                    HttpMethod.DELETE,
+                    getHttpRequest(),
+                    Void.class);
+            return true;
+        }
+        catch (HttpClientErrorException e) {
+            ExceptionHandler.handleHttpClientErrorException(e);
+        }
+        return false;
+    }
+
 }

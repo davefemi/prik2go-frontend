@@ -43,7 +43,7 @@ public class AuthController {
             return handleLogin();
         } catch (CancellationException e) {
             if (!isSessionValid())
-            throw new CancellationException(e.getMessage());
+                throw new CancellationException(e.getMessage());
         }
         catch (Exception e){
             throw new IllegalAccessException("Login failed: " + e.getMessage());
@@ -78,7 +78,7 @@ public class AuthController {
         throw new LimitExceededException("Too many attempts");
     }
 
-    private static UserDTO getUserCredentials(LoginForm form) throws Exception {
+    private static UserDTO getUserCredentials(LoginForm form) {
         form.addPropertyChangeListener("googleAuth", evt -> {
             if ((boolean) evt.getNewValue()) {
                 log.info("Gelukt");
@@ -116,11 +116,12 @@ public class AuthController {
         return authService.linkOAuth2User(provider);
     }
 
+    public static boolean unlinkOAuth2User() throws ApplicationException {
+        return authService.unlinkOAuth2User();
+    }
+
     public static boolean loginOAuth2User(String provider) throws ApplicationException {
         session = authService.loginOAuth2User(provider);
-        if (isSessionValid()){
-            return true;
-        }
-        return false;
+        return isSessionValid();
     }
 }

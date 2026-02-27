@@ -1,7 +1,5 @@
 package nl.davefemi.prik2go.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.davefemi.prik2go.controller.AuthController;
 import nl.davefemi.prik2go.dto.CustomerDTO;
 import nl.davefemi.prik2go.dto.SessionDTO;
@@ -13,7 +11,6 @@ import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.http.ProblemDetail;
 import javax.swing.*;
 import javax.swing.Timer;
 import java.awt.event.ActionEvent;
@@ -24,7 +21,6 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     private static final Log log = LogFactory.getLog(ApiClient.class);
     private final Timer timer = new Timer(1000, new RefreshListener());
     private final RestTemplate restTemplate;
-    private final ObjectMapper objectMapper = new ObjectMapper();
 //    private static final String BASE_URL = "https://prik2go-backend.onrender.com/private/locations/%s";
 //    private static final String BASE_URL = "http://localhost:8080/private/locations/%s";
 //    private static final String BASE_URL = "https://prik2go.mangobeach-d8e4eeb8.germanywestcentral.azurecontainerapps.io/private/locations/%s";
@@ -70,16 +66,8 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
                     getHttpRequest(),
                     List.class);
         } catch (HttpClientErrorException e) {
-            if (MediaType.APPLICATION_PROBLEM_JSON.equals(e.getResponseHeaders().getContentType())){
-                ProblemDetail pd = null;
-                try {
-                    pd = objectMapper.readValue(e.getResponseBodyAsString(), ProblemDetail.class);
-                } catch (JsonProcessingException ex) {
-                    throw new RuntimeException(ex);
-                }
-                throw new ApplicationException(pd.getDetail());
-            }
-            throw new ApplicationException(e.getResponseBodyAsString());
+            ExceptionHandler.handleHttpClientErrorException(e);
+            return null;
         }
         catch (RestClientException e){
             throw new ApplicationException(e.getCause().getMessage());
@@ -94,16 +82,8 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
                     getHttpRequest(),
                     CustomerDTO.class);
         } catch (HttpClientErrorException e) {
-            if (MediaType.APPLICATION_PROBLEM_JSON.equals(e.getResponseHeaders().getContentType())) {
-                ProblemDetail pd;
-                try {
-                    pd = objectMapper.readValue(e.getResponseBodyAsString(), ProblemDetail.class);
-                } catch (JsonProcessingException ex) {
-                    throw new RuntimeException(ex);
-                }
-                throw new ApplicationException(pd.getDetail());
-            }
-            throw new ApplicationException(e.getResponseBodyAsString());
+            ExceptionHandler.handleHttpClientErrorException(e);
+            return null;
         }
     }
 
@@ -117,16 +97,8 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
                     Boolean.class);
         }
         catch (HttpClientErrorException e){
-            if (MediaType.APPLICATION_PROBLEM_JSON.equals(e.getResponseHeaders().getContentType())){
-                ProblemDetail pd;
-                try {
-                    pd = objectMapper.readValue(e.getResponseBodyAsString(), ProblemDetail.class);
-                } catch (JsonProcessingException ex) {
-                    throw new RuntimeException(ex);
-                }
-                throw new ApplicationException(pd.getDetail());
-            }
-            throw new ApplicationException(e.getResponseBodyAsString());
+            ExceptionHandler.handleHttpClientErrorException(e);
+            return null;
         }
     }
 
@@ -142,16 +114,7 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
                     Void.class);
             notifyObservers();
         } catch (HttpClientErrorException e) {
-            if (MediaType.APPLICATION_PROBLEM_JSON.equals(e.getResponseHeaders().getContentType())){
-                ProblemDetail pd;
-                try {
-                    pd = objectMapper.readValue(e.getResponseBodyAsString(), ProblemDetail.class);
-                } catch (JsonProcessingException ex) {
-                    throw new RuntimeException(ex);
-                }
-                throw new ApplicationException(pd.getDetail());
-            }
-            throw new ApplicationException(e.getResponseBodyAsString());
+            ExceptionHandler.handleHttpClientErrorException(e);
         }
     }
 
