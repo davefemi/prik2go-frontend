@@ -1,7 +1,7 @@
 package nl.davefemi.prik2go.client;
 
 import nl.davefemi.prik2go.controller.AuthController;
-import nl.davefemi.prik2go.dto.CustomerDTO;
+import nl.davefemi.prik2go.dto.BranchDTO;
 import nl.davefemi.prik2go.dto.SessionDTO;
 import nl.davefemi.prik2go.exceptions.ApplicationException;
 import nl.davefemi.prik2go.observer.ApiSubject;
@@ -51,7 +51,7 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("Authorization", "Bearer " + session.getToken());
-            return new HttpEntity<>(AuthController.getSession().getUser().toString(), headers);
+            return new HttpEntity<>(headers);
         }
         catch (Exception e){
             throw new IllegalAccessException("No authorisation");
@@ -62,7 +62,7 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     public ResponseEntity<List> getBranches() throws IllegalAccessException, ApplicationException {
         try {
             return restTemplate.exchange(String.format(BASE_URL, "get-branches"),
-                    HttpMethod.POST,
+                    HttpMethod.GET,
                     getHttpRequest(),
                     List.class);
         } catch (HttpClientErrorException e) {
@@ -75,12 +75,12 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     }
 
     @Override
-    public ResponseEntity<CustomerDTO> getCustomers(String location) throws IllegalAccessException, ApplicationException {
+    public ResponseEntity<BranchDTO> getCustomers(String location) throws IllegalAccessException, ApplicationException {
         try {
             return restTemplate.exchange(String.format(BASE_URL, "get-customers?location=" + location),
-                    HttpMethod.POST,
+                    HttpMethod.GET,
                     getHttpRequest(),
-                    CustomerDTO.class);
+                    BranchDTO.class);
         } catch (HttpClientErrorException e) {
             ExceptionHandler.handleHttpClientErrorException(e);
             return null;
@@ -92,7 +92,7 @@ public class ApiClient extends ApiSubject implements ApiClientInterface {
     public ResponseEntity<Boolean> getBranchStatus(String location) throws ApplicationException, IllegalAccessException {
         try {
             return restTemplate.exchange(String.format(BASE_URL, "get-status?location=" + location),
-                    HttpMethod.POST,
+                    HttpMethod.GET,
                     getHttpRequest(),
                     Boolean.class);
         }

@@ -63,7 +63,7 @@ public class AuthClient {
             RequestEntity<UserDTO> httpRequest = new RequestEntity<>(
                     user,
                     getHttpRequest().getHeaders(),
-                    HttpMethod.POST,
+                    HttpMethod.PUT,
                     new URI(String.format(BASE_URL, "auth/change-password")),
                     UserDTO.class);
             restTemplate.exchange(httpRequest, SessionDTO.class);

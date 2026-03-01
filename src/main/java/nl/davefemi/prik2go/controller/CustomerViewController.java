@@ -1,6 +1,6 @@
 package nl.davefemi.prik2go.controller;
 
-import nl.davefemi.prik2go.dto.CustomerDTO;
+import nl.davefemi.prik2go.dto.BranchDTO;
 import nl.davefemi.prik2go.exceptions.ApplicationException;
 import nl.davefemi.prik2go.service.DataServiceInterface;
 
@@ -57,17 +57,17 @@ public class CustomerViewController {
          * terugkeerwaarde van de dto is null, wordt een exceptie opgegooid.
          * @param locatie van de vestiging
          */
-        public void getKlantenDTO(String locatie, Consumer<CustomerDTO> callback, Consumer<Exception> exceptionConsumer) {
-                SwingWorker<CustomerDTO, Void> worker = new SwingWorker<>() {
+        public void getKlantenDTO(String locatie, Consumer<BranchDTO> callback, Consumer<Exception> exceptionConsumer) {
+                SwingWorker<BranchDTO, Void> worker = new SwingWorker<>() {
                         @Override
-                        protected CustomerDTO doInBackground() throws Exception {
+                        protected BranchDTO doInBackground() throws Exception {
                                 return service.getCustomerDTO(locatie);
                         }
 
                         @Override
                         protected void done(){
                             try {
-                                CustomerDTO result = get();
+                                BranchDTO result = get();
                                 callback.accept(result);
                             } catch (Exception e) {
                                 exceptionConsumer.accept((Exception) e.getCause());
