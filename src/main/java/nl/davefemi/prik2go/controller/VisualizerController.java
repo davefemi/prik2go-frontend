@@ -66,7 +66,7 @@ public class VisualizerController implements VisualizerControllerInterface {
                                 List<Future<Integer>> futures = new ArrayList<>();
                                 for (String v : vestigingen) {
                                         Future<Integer> future = pool.submit(() ->
-                                                service.getCustomerDTO(v).getAantalKlanten());
+                                                service.getCustomerDTO(v).getNumberOfCustomers());
                                         futures.add(future);
                                 }
                                 pool.shutdown();

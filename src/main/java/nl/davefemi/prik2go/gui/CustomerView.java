@@ -119,8 +119,8 @@ public class CustomerView extends JFrame implements ApiObserver {
                 if (locatie != null) {
                         selectedLocation = locatie;
                         controller.getKlantenDTO(locatie, klanten -> controller.getBranchStatus(vestigingMap->{
-                                builder.updateDisplay(vestigingMap, locatie, klanten.getKlantNummers(),
-                                        klanten.getAantalKlanten(), actie);
+                                builder.updateDisplay(vestigingMap, locatie, klanten.getCustomerIds(),
+                                        klanten.getNumberOfCustomers(), actie);
                                 this.revalidate();
                                 this.repaint();
                         }, e -> logger.warning(e.getMessage())),
